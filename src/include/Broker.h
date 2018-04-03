@@ -7,13 +7,6 @@
 
 #include "inc.h"
 
-//TODO delete it
-//int fun(int arg)
-//{
-//    return arg;
-//}
-
-
 class Broker {
 private:
     static Broker* instancePtr;
