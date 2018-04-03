@@ -1,0 +1,5 @@
+include_directories(${FileExchanger_SOURCE_DIR}/src/include)
+include_directories(${FileExchanger_SOURCE_DIR}/tests/include)
+link_directories(${FileExchanger_SOURCE_DIR}/tests)
+add_executable(src main.cpp)
+target_link_libraries(src tests)
