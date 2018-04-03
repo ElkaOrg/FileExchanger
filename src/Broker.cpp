@@ -87,7 +87,7 @@ void Broker::waitForClients()
         exit(1);
     }
 
-    //signal(SIGINT, Broker::terminate);
+    signal(SIGINT, Broker::terminateWrapper);
 
 
     while(true)
