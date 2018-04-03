@@ -4,6 +4,31 @@
 
 #include "include/Broker.h"
 
+/* Null, because instance will be initialized on demand. */
+Broker* Broker::instancePtr = 0;
+
+Broker* Broker::getInstance()
+{
+    if (instancePtr == 0)
+    {
+        instancePtr = new Broker();
+    }
+
+    return instancePtr;
+}
+
+Broker::Broker() {}
+
+Broker::~Broker()
+{
+    delete instancePtr;
+}
+
+void Broker::terminateWrapper(int arg)
+{
+    instancePtr->terminate(arg);
+}
+
 void Broker::terminate(int arg)
 {
     std::vector<pthread_t>::iterator it;
@@ -63,6 +88,7 @@ void Broker::waitForClients()
     }
 
     //signal(SIGINT, Broker::terminate);
+
 
     while(true)
     {

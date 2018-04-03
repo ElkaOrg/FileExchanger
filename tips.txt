@@ -9,3 +9,6 @@ https://twitter.com/clion_ide/status/916271155228626944
 
 Signal handling in linux:
 http://www.alexonlinux.com/signal-handling-in-linux
+
+Singletons:
+https://gist.github.com/pazdera/1098119

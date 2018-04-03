@@ -8,8 +8,8 @@
 int main() {
     std::cout << "Broker main" << std::endl;
 
-    Broker broker;
-    broker.waitForClients();
+    Broker* broker = Broker::getInstance();
+    broker->waitForClients();
 
     return 0;
 }
