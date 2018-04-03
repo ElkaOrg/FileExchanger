@@ -1,5 +1,6 @@
 include_directories(${FileExchanger_SOURCE_DIR}/src/include)
 include_directories(${FileExchanger_SOURCE_DIR}/tests/include)
-link_directories(${FileExchanger_SOURCE_DIR}/tests)
-add_executable(src main.cpp)
-target_link_libraries(src tests)
+
+add_library (Program Broker.cpp include/Broker.h Client.cpp include/Client.h)
+add_executable (demo main.cpp)
+target_link_libraries (demo Program)
