@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.9)
 project(FileExchanger)
-subdirs(src tests)
+
+add_subdirectory(src)
+add_subdirectory(tests)
+
+enable_testing()
+
+add_test (NAME MyTest COMMAND Test) #???
 
 set(CMAKE_CXX_STANDARD 11)
 
-#add_executable(FileExchanger main.cpp)
