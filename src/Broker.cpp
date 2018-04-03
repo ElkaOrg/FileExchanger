@@ -6,12 +6,16 @@
 
 Broker& Broker::getInstance()
 {
+    static Broker instance;
+
+    instance.instancePtr = &instance;
+
     return instance;
 }
 
 void Broker::terminateWrapper(int arg)
 {
-    instance.terminate(arg);
+    instancePtr->terminate(arg);
 }
 
 void Broker::terminate(int arg)

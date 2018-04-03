@@ -23,15 +23,15 @@
 #include "zconf.h"  //good include???
 
 //TODO delete it
-int fun(int arg)
-{
-    return arg;
-}
+//int fun(int arg)
+//{
+//    return arg;
+//}
 
 
 class Broker {
 private:
-    static Broker instance;
+    static Broker* instancePtr;
     std::vector<pthread_t> threads;
 
 public:

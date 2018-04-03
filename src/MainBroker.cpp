@@ -5,10 +5,12 @@
 
 #include "Broker.h"
 
+Broker* Broker::instancePtr = NULL;
+
 int main() {
     std::cout << "Broker main" << std::endl;
 
-    Broker::getInstance();
+    Broker broker = Broker::getInstance();
 
     return 0;
 }
