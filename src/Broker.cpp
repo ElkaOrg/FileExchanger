@@ -4,20 +4,6 @@
 
 #include "include/Broker.h"
 
-Broker& Broker::getInstance()
-{
-    static Broker instance;
-
-    instance.instancePtr = &instance;
-
-    return instance;
-}
-
-void Broker::terminateWrapper(int arg)
-{
-    instancePtr->terminate(arg);
-}
-
 void Broker::terminate(int arg)
 {
     std::vector<pthread_t>::iterator it;
@@ -76,7 +62,7 @@ void Broker::waitForClients()
         exit(1);
     }
 
-    signal(SIGINT, Broker::terminateWrapper);
+    //signal(SIGINT, Broker::terminate);
 
     while(true)
     {

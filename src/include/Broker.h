@@ -9,15 +9,12 @@
 
 class Broker {
 private:
-    static Broker* instancePtr;
     std::vector<pthread_t> threads;
 
 public:
-    static Broker& getInstance();
     void waitForClients(void);
 private:
     static void* handleClient(void* msgsock);
-    static void terminateWrapper(int arg);
     void terminate(int arg);
 };
 

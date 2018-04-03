@@ -5,12 +5,10 @@
 
 #include "Broker.h"
 
-Broker* Broker::instancePtr = NULL;     //if not present causes undefined reference
-
 int main() {
     std::cout << "Broker main" << std::endl;
 
-    Broker broker = Broker::getInstance();
+    Broker broker;
     broker.waitForClients();
 
     return 0;

@@ -6,3 +6,6 @@ https://stackoverflow.com/questions/14446495/cmake-project-structure-with-unit-t
 
 Boost with CLion:
 https://twitter.com/clion_ide/status/916271155228626944
+
+Signal handling in linux:
+http://www.alexonlinux.com/signal-handling-in-linux
