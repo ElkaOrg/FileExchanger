@@ -4,6 +4,26 @@
 
 #include "include/Broker.h"
 
+Broker& Broker::getInstance()
+{
+    return instance;
+}
+
+void Broker::terminateWrapper(int arg)
+{
+    instance.terminate(arg);
+}
+
+void Broker::terminate(int arg)
+{
+    std::vector<pthread_t>::iterator it;
+    for(it = threads.begin(); it != threads.end(); ++it)
+    {
+        pthread_join(*it, NULL);
+    }
+    exit(0);
+}
+
 void* Broker::handleClient(void* ptr)
 {
     SocketWrapper* socketWrapper = static_cast<SocketWrapper*>(ptr);
@@ -22,6 +42,7 @@ void Broker::waitForClients()
     int msgsock;
     char buf[1024];
     int rval;
+
     struct sockaddr_in client_addr;
     socklen_t client_addr_len;
 
@@ -48,6 +69,8 @@ void Broker::waitForClients()
         exit(1);
     }
 
+    signal(SIGINT, Broker::terminateWrapper);
+
     while(true)
     {
         msgsock = accept(sock, (struct sockaddr *) &client_addr, &client_addr_len);
@@ -57,9 +80,12 @@ void Broker::waitForClients()
         }
         else
         {
+            pthread_t thread;
             SocketWrapper* socketWrapper = new SocketWrapper(msgsock);
 
-            pthread_create(NULL, NULL, handleClient, (void *) socketWrapper);
+            pthread_create(&thread, NULL, Broker::handleClient, (void *) socketWrapper);
+
+            threads.push_back(thread);
         }
     };
     /*
@@ -67,6 +93,4 @@ void Broker::waitForClients()
      * jednak wszystkie deskryptory zostana zamkniete gdy proces
      * zostanie zakonczony (np w wyniku wystapienia sygnalu)
      */
-
-    exit(0);
 }
