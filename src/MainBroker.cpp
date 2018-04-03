@@ -11,6 +11,7 @@ int main() {
     std::cout << "Broker main" << std::endl;
 
     Broker broker = Broker::getInstance();
+    broker.waitForClients();
 
     return 0;
 }
