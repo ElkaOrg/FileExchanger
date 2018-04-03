@@ -23,8 +23,10 @@ void Broker::terminate(int arg)
     std::vector<pthread_t>::iterator it;
     for(it = threads.begin(); it != threads.end(); ++it)
     {
+        std::cout<<"partial-terminate"<<std::endl;
         pthread_join(*it, NULL);
     }
+    std::cout<<"total-terminate"<<std::endl;
     exit(0);
 }
 
@@ -34,6 +36,7 @@ void* Broker::handleClient(void* ptr)
     int socket = socketWrapper->getSocket();
 
     //TODO body
+    std::cout<<"handleClient"<<std::endl;
 
     close(socket);
     delete socketWrapper;

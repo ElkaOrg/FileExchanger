@@ -20,6 +20,7 @@
 #include <pthread.h>
 #include <vector>
 #include <csignal>
+#include <iostream>
 #include "zconf.h"  //good include???
 
 #endif //FILEEXCHANGER_INC_H
