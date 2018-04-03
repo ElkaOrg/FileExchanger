@@ -5,6 +5,11 @@
 #ifndef FILEEXCHANGER_BROKER_H
 #define FILEEXCHANGER_BROKER_H
 
+int fun(int arg)
+{
+    return arg;
+}
+
 
 class Broker {
 
