@@ -26,7 +26,8 @@ Broker::~Broker()
 
 void Broker::terminateWrapper(int arg)
 {
-    instancePtr->terminate(arg);
+    if(arg == SIGINT)
+        instancePtr->terminate(arg);
 }
 
 void Broker::terminate(int arg)
