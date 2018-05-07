@@ -5,6 +5,8 @@
 #ifndef FILEEXCHANGER_CLIENTMENU_H
 #define FILEEXCHANGER_CLIENTMENU_H
 
+#include "../../../include/inc.h"
+
 class ClientMenu
 {
 public:
