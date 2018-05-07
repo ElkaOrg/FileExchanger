@@ -6,6 +6,7 @@
 #define FILEEXCHANGER_CLIENT_H
 
 #include "inc.h"
+#include "../modules/client/include/ClientMenu.h"
 
 
 class Client {
