@@ -8,5 +8,4 @@ enable_testing()
 
 add_test (NAME MyTest COMMAND Test) #???
 
-set(CMAKE_CXX_STANDARD 11)
-
+set(CMAKE_CXX_STANDARD 17)
