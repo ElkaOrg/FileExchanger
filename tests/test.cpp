@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_SUITE(AllTests)
     BOOST_AUTO_TEST_CASE(checkIfFileIsPlacedIntoBufferInFileTransferSendOneFile) {
         FileTransfer fileTransfer(1);   //doesn't matter what socket descriptor we pass in this test
 
-        fileTransfer.sendOneFile("files_for_tests/file1.txt");
+        fileTransfer.sendOneFile("/home/gnowacki/CLionProjects/FileExchanger/tests/files_for_tests/file1.txt");
 
-        BOOST_CHECK_EQUAL(1, 1);
+        //DEBUG AND CHECK buffer value
     }
 
 BOOST_AUTO_TEST_SUITE_END()

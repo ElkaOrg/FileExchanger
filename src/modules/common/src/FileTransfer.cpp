@@ -8,21 +8,81 @@ FileTransfer::FileTransfer(int socketDescriptor): socketDescriptor(socketDescrip
 
 int FileTransfer::sendOneFile(char *filePath)
 {
-    std::fstream fileStream;
-    char buffer[BUF_SIZE];
+    //send file name first
+    write(socketDescriptor, filePath,256);
 
-    fileStream.open(filePath, std::ios::in);
-    if( fileStream.good() == true )
+    FILE *fp = fopen(filePath,"rb");
+    if(fp == NULL)
     {
-        fileStream >> buffer;
-
-
-        fileStream.close();
+        printf("File open error");
+        return 1;
     }
 
+    while(1)
+    {
+        unsigned char buff[1024]={0};
+        int nread = fread(buff,1,1024,fp);
+
+        /* If read was success, send data. */
+        if(nread > 0)
+        {
+            //printf("Sending \n");
+            write(socketDescriptor, buff, nread);
+        }
+        if (nread < 1024)
+        {
+            if (feof(fp))
+            {
+                printf("End of file\n");
+                printf("File transfer completed for id: %d\n",socketDescriptor);
+                fclose(fp);
+            }
+            if (ferror(fp))
+                printf("Error reading\n");
+            break;
+        }
+    }//while
+
+    return 0;
 }
 
-int FileTransfer::receiveOneFile(char *filePath)
+char* FileTransfer::receiveOneFile(void)
 {
+    int bytesReceived = 0;
+    char recvBuff[1024];
+    memset(recvBuff, '0', sizeof(recvBuff));
 
+    /* Create file where data will be stored */
+    FILE *fp;
+    char fname[100];
+    read(socketDescriptor, fname, 256);
+
+    fp = fopen(fname, "ab");
+    if(fp == NULL)
+    {
+        printf("Error opening file");
+        //return 1;
+    }
+
+    long double sz = 1;
+
+    /* Receive data in chunks of 256 bytes */
+    while((bytesReceived = read(socketDescriptor, recvBuff, 1024)) > 0)
+    {
+        sz++;
+        //gotoxy(0,4);
+        printf("Received: %llf Mb",(sz/1024));
+        fflush(stdout);
+        // recvBuff[n] = 0;
+        fwrite(recvBuff, 1,bytesReceived,fp);
+        // printf("%s \n", recvBuff);
+    }
+
+    if(bytesReceived < 0)
+    {
+        printf("\n Read Error \n");
+    }
+    printf("\nFile OK....Completed\n");
+    return fname;
+    //return 0;
 }

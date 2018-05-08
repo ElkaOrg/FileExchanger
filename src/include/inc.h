@@ -23,5 +23,7 @@
 #include <iostream>
 #include "zconf.h"  //good include???
 #include <fstream>
+#include <fcntl.h>
+#include <cstring>
 
 #endif //FILEEXCHANGER_INC_H
