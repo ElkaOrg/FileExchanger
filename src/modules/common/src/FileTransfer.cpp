@@ -4,6 +4,8 @@
 
 #include "../include/FileTransfer.h"
 
+FileTransfer::FileTransfer(int socketDescriptor): socketDescriptor(socketDescriptor) {}
+
 int FileTransfer::sendOneFile(char *filePath)
 {
     std::fstream fileStream;

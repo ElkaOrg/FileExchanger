@@ -1,5 +1,6 @@
 #define BOOST_TEST_MODULE ProgramTests
 #include <boost/test/unit_test.hpp>
+#include <modules/common/include/FileTransfer.h>
 
 #define private public      //for test purpose
 
@@ -17,7 +18,9 @@ BOOST_AUTO_TEST_SUITE(AllTests)
     }
 
     BOOST_AUTO_TEST_CASE(checkIfFileIsPlacedIntoBufferInFileTransferSendOneFile) {
+        FileTransfer fileTransfer(1);   //doesn't matter what socket descriptor we pass in this test
 
+        fileTransfer.sendOneFile("files_for_tests/file1.txt");
 
         BOOST_CHECK_EQUAL(1, 1);
     }

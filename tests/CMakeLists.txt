@@ -8,6 +8,7 @@ add_definitions (-DBOOST_TEST_DYN_LINK)
 add_executable (Test test.cpp)
 target_link_libraries (Test
         Program
+        Modules
         pthread
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}

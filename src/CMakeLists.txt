@@ -2,7 +2,7 @@ include_directories(${FileExchanger_SOURCE_DIR}/src/include)
 include_directories(${FileExchanger_SOURCE_DIR}/tests/include)
 
 include_directories(${FileExchanger_SOURCE_DIR}/src/modules/client/include)
-add_library(Modules modules/client/src/ClientMenu.cpp modules/client/include/ClientMenu.h modules/client/src/FileTransfer.cpp modules/client/include/FileTransfer.h)
+add_library(Modules modules/client/src/ClientMenu.cpp modules/client/include/ClientMenu.h modules/common/src/FileTransfer.cpp modules/common/include/FileTransfer.h)
 
 add_library (Program Broker.cpp include/Broker.h Client.cpp include/Client.h SocketWrapper.cpp include/SocketWrapper.h include/inc.h)
 

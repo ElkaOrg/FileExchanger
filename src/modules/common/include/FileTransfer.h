@@ -11,7 +11,12 @@
 
 class FileTransfer
 {
+private:
+    int socketDescriptor;
+
 public:
+    FileTransfer(int socketDescriptor);
+
     int sendOneFile(char* filePath);
     int receiveOneFile(char *filePath);
 };
