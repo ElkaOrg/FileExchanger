@@ -22,7 +22,7 @@ void ClientMenu::showMainMenu(void)
             case 0:
                 std::cout << "Exiting..." << std::endl;
                 //TODO do clean up
-                break;
+                return;
             case 1:
                 std::cout << "Option 1" << std::endl;
                 break;

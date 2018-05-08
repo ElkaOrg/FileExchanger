@@ -59,8 +59,8 @@ int FileTransfer::receiveOneFile(char* filePath)
 
     strcpy(filePath, fname);
 
-    //fp = fopen(fname, "ab");
-    fp = fopen("/home/gnowacki/BROKER.txt", "ab");  //TODO uncomment 
+    //fp = fopen(fname, "wb");
+    fp = fopen("/home/gnowacki/BROKER_FILE", "wb");  //TODO uncomment
     if(fp == NULL)
     {
         printf("Error opening file");
@@ -73,7 +73,6 @@ int FileTransfer::receiveOneFile(char* filePath)
     while((bytesReceived = read(socketDescriptor, recvBuff, 1024)) > 0)
     {
         sz++;
-        //gotoxy(0,4);
         printf("Received: %llf Mb",(sz/1024));
         fflush(stdout);
         // recvBuff[n] = 0;
@@ -86,5 +85,8 @@ int FileTransfer::receiveOneFile(char* filePath)
         printf("\n Read Error \n");
     }
     printf("\nFile OK....Completed\n");
+
+    fclose(fp);
+
     return 0;
 }
