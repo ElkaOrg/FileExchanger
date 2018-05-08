@@ -15,6 +15,7 @@
 
 class DataBase {
 public:
+    explicit DataBase();
     DataBase(const std::string& fileName) : fileName(fileName){
         fStream.open(fileName.c_str(), std::ios::out); // create file if no exists
         fStream.close();
