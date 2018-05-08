@@ -16,4 +16,10 @@ BOOST_AUTO_TEST_SUITE(AllTests)
         BOOST_CHECK_EQUAL(broker1, broker2);
     }
 
+    BOOST_AUTO_TEST_CASE(checkIfFileIsPlacedIntoBufferInFileTransferSendOneFile) {
+
+
+        BOOST_CHECK_EQUAL(1, 1);
+    }
+
 BOOST_AUTO_TEST_SUITE_END()

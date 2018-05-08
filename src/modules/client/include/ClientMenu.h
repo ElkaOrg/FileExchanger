@@ -9,7 +9,12 @@
 
 class ClientMenu
 {
+private:
+    int socketDescriptor;
+
 public:
+    ClientMenu(int socketDescriptor);
+
     void showMainMenu(void);
 };
 

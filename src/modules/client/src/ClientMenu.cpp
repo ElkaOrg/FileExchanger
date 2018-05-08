@@ -3,6 +3,8 @@
 //
 #include "../include/ClientMenu.h"
 
+ClientMenu::ClientMenu(int socketDescriptor): socketDescriptor(socketDescriptor) {}
+
 void ClientMenu::showMainMenu(void)
 {
     int chosenNumber = 0;

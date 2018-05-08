@@ -7,10 +7,13 @@
 
 #include "../../../include/inc.h"
 
+#define BUF_SIZE 1024
+
 class FileTransfer
 {
 public:
     int sendOneFile(char* filePath);
+    int receiveOneFile(char *filePath);
 };
 
 #endif //FILEEXCHANGER_FILETRANSFER_H

@@ -22,5 +22,6 @@
 #include <csignal>
 #include <iostream>
 #include "zconf.h"  //good include???
+#include <fstream>
 
 #endif //FILEEXCHANGER_INC_H

@@ -30,7 +30,7 @@ void Client::connectToBroker()
     }
 
     //TODO body
-    ClientMenu clientMenu;
+    ClientMenu clientMenu(sock);
     clientMenu.showMainMenu();
 
     close(sock);
