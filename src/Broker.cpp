@@ -48,6 +48,12 @@ void* Broker::handleClient(void* ptr)
     int socket = socketWrapper->getSocket();
 
     //TODO body
+    char receivedFileName[100];
+    FileTransfer fileTransfer(socket);
+    fileTransfer.receiveOneFile(receivedFileName);
+
+    //END body
+
     std::cout<<"handleClient"<<std::endl;
 
     close(socket);

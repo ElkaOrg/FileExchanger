@@ -9,6 +9,7 @@
 #define BROKER_ADDR "127.0.0.1"
 
 #include "SocketWrapper.h"
+#include "../modules/common/include/FileTransfer.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>

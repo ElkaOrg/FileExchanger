@@ -18,7 +18,7 @@ public:
     FileTransfer(int socketDescriptor);
 
     int sendOneFile(char* filePath);
-    char* receiveOneFile(void);
+    int receiveOneFile(char* filePath);
 };
 
 #endif //FILEEXCHANGER_FILETRANSFER_H

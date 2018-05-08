@@ -46,7 +46,7 @@ int FileTransfer::sendOneFile(char *filePath)
     return 0;
 }
 
-char* FileTransfer::receiveOneFile(void)
+int FileTransfer::receiveOneFile(char* filePath)
 {
     int bytesReceived = 0;
     char recvBuff[1024];
@@ -57,11 +57,14 @@ char* FileTransfer::receiveOneFile(void)
     char fname[100];
     read(socketDescriptor, fname, 256);
 
-    fp = fopen(fname, "ab");
+    strcpy(filePath, fname);
+
+    //fp = fopen(fname, "ab");
+    fp = fopen("/home/gnowacki/BROKER.txt", "ab");  //TODO uncomment 
     if(fp == NULL)
     {
         printf("Error opening file");
-        //return 1;
+        return 1;
     }
 
     long double sz = 1;
@@ -83,6 +86,5 @@ char* FileTransfer::receiveOneFile(void)
         printf("\n Read Error \n");
     }
     printf("\nFile OK....Completed\n");
-    return fname;
-    //return 0;
+    return 0;
 }
