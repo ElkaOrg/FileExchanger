@@ -40,7 +40,7 @@ public:
         }
         return NULL;
     }
-    void saveKey(const std::string key, const std::string& value){
+    void saveKey(const std::string& key, const std::string& value){
 
         //buff whole file, and remove value
         fStream.clear();
