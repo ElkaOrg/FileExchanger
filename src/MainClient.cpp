@@ -6,6 +6,7 @@
 #include "Client.h"
 
 #include "include/DataBase.h"
+#include "include/DirManagment.h"
 
 int main()
 {
