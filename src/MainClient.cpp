@@ -12,15 +12,9 @@ int main()
 {
     std::cout << "Client main" << std::endl;
 
-    DataBase db("settings.txt");
-    db.saveKey("path", "xyzdasdz");
-    db.saveKey("path", "xyzdasdz");
-    db.saveKey("path", "xyzdasdz3");
-    db.saveKey("path", "xyzdasdz3");
-    db.saveKey("path3", "xyzdasdz3");
-    db.saveKey("path3", "xyzdasdz35");
+    DirManagment dir("upload/");
 
-    std::cout << db.getKey("path3");
+    std::cout << dir.calculateDirHash() << std::endl;
     Client client;
 
     client.connectToBroker();

@@ -7,23 +7,71 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include <boost/filesystem.hpp>
+#include <boost/functional/hash.hpp>
+
 using namespace boost::filesystem;
 
 class DirManagment {
 public:
     explicit DirManagment();
-    DirManagment(const std::string& dirPath) : dirPathName(dirPath){
-        path p =  path(dirPath);
-        if(!is_directory(p)){
+    DirManagment(const std::string& dirPathName) : dirPathName(dirPathName), dirPath(dirPathName){
+        if(!is_directory(dirPath)){
             throw std::runtime_error("This is not a valid directory!");
         }
 
     }
+    std::vector<std::string> getAllFileNames(){
+        directory_iterator end_itr;
+        std::vector<std::string> result;
+
+        // loop over iterator
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
+        {
+            //check if this is file
+            if (is_regular_file(itr->path())) {
+                result.push_back(itr->path().filename().string());
+            }
+        }
+        return result;
+    }
+    std::vector<path> getAllFilesPath(){
+        directory_iterator end_itr;
+        std::vector<path> result;
+
+        // loop over iterator
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
+        {
+            //check if this is file
+            if (is_regular_file(itr->path())) {
+                result.push_back(itr->path());
+            }
+        }
+        return result;
+    }
+
+    std::size_t calculateDirHash() const {
+        directory_iterator end_itr;
+        std::string fileNamesAndSizes = "";
+
+        // loop over iterator
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
+        {
+            //check if this is file
+            if (is_regular_file(itr->path())) {
+                fileNamesAndSizes+=itr->path().filename().string()+std::to_string(boost::filesystem::file_size(itr->path()));
+            }
+        }
+        boost::hash<std::string> string_hash;
+
+        return string_hash(fileNamesAndSizes);
+    }
     ~DirManagment(){
     }
 private:
-    std::string dirPathName;
+    const std::string dirPathName;
+    const path dirPath;
 
 
 };

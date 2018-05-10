@@ -15,7 +15,7 @@ add_executable (Main main.cpp include/DataBase.h)
 target_link_libraries (Main Program Modules pthread boost_system)
 
 add_executable(MainBroker MainBroker.cpp)
-target_link_libraries(MainBroker Program Modules pthread boost_system)
+target_link_libraries(MainBroker Program Modules pthread boost_system boost_filesystem)
 
 add_executable(MainClient MainClient.cpp)
-target_link_libraries(MainClient Program Modules pthread boost_system)
+target_link_libraries(MainClient Program Modules pthread boost_system boost_filesystem)
