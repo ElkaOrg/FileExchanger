@@ -10,14 +10,10 @@
 
 int main()
 {
-    std::cout << "Client main" << std::endl;
-
-    DirManagment dir("upload/");
-
-    std::cout << dir.calculateDirHash() << std::endl;
-    Client client;
-
-    client.connectToBroker();
+    ClientMenu menu;
+    menu.showMainMenu();
+    //Client client;
+    //client.connectToBroker();
 
 
     return 0;

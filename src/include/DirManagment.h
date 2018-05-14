@@ -12,7 +12,12 @@
 #include <boost/functional/hash.hpp>
 
 using namespace boost::filesystem;
+/* ex usage */
+/**
+DirManagment dir("upload/");
 
+std::cout << dir.calculateDirHash() << std::endl;
+*/
 class DirManagment {
 public:
     explicit DirManagment();
