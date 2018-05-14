@@ -4,15 +4,16 @@
 
 #include "include/Client.h"
 
-void Client::connectToBroker()
+int Client::connectToBroker()
 {
-    int sock;
-    struct sockaddr_in server;
-    struct hostent *hp;
-    char buf[1024];
+    if(socketId > 0){
+        perror("Alredy connected?!");
+    }
 
-    sock = socket( AF_INET, SOCK_STREAM, 0 );
-    if (sock == -1)
+    struct sockaddr_in server;
+
+    socketId = socket( AF_INET, SOCK_STREAM, 0 );
+    if (socketId == -1)
     {
         perror("opening stream socket");
         exit(1);
@@ -23,17 +24,20 @@ void Client::connectToBroker()
     server.sin_addr.s_addr = inet_addr(BROKER_ADDR);
     server.sin_port = htons(BROKER_PORT);
 
-    if (connect(sock, (struct sockaddr *) &server, sizeof server) == -1)
+    if (connect(socketId, (struct sockaddr *) &server, sizeof server) == -1)
     {
         perror("connecting stream socket");
         exit(1);
     }
+    return socketId;
+}
 
-    //TODO body
-    ClientMenu clientMenu(sock);
-    clientMenu.showMainMenu();
+void Client::disconnectFromBroker() {
+    close(socketId);
+    socketId = 0;
+}
 
-    close(sock);
-    exit(0);
+bool Client::isConnected() {
+    return socketId > 0;
 }
 

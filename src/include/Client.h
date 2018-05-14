@@ -10,8 +10,18 @@
 
 
 class Client {
+private:
+    int socketId = 0;
 public:
-    void connectToBroker();
+    /**
+     *
+     * @return socketDescriptor
+     */
+    int connectToBroker();
+
+    void disconnectFromBroker();
+
+    bool isConnected();
 };
 
 

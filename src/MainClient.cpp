@@ -3,18 +3,18 @@
 //
 #include <iostream>
 
-#include "Client.h"
+#include "include/Client.h"
 
 #include "include/DataBase.h"
 #include "include/DirManagment.h"
 
 int main()
 {
-    ClientMenu menu;
-    menu.showMainMenu();
-    //Client client;
-    //client.connectToBroker();
+    Client client;
+    client.connectToBroker();
 
 
+    ClientMenu clientMenu(client);
+    clientMenu.showMainMenu();
     return 0;
 }
