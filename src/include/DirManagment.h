@@ -12,23 +12,29 @@
 #include <boost/functional/hash.hpp>
 
 using namespace boost::filesystem;
+/* ex usage */
+/**
+DirManagment dir("upload/");
 
+std::cout << dir.calculateDirHash() << std::endl;
+*/
 class DirManagment {
 public:
     explicit DirManagment();
-    DirManagment(const std::string& dirPathName) : dirPathName(dirPathName), dirPath(dirPathName){
-        if(!is_directory(dirPath)){
+
+    DirManagment(const std::string &dirPathName) : dirPathName(dirPathName), dirPath(dirPathName) {
+        if (!is_directory(dirPath)) {
             throw std::runtime_error("This is not a valid directory!");
         }
 
     }
-    std::vector<std::string> getAllFileNames(){
+
+    std::vector<std::string> getAllFileNames() {
         directory_iterator end_itr;
         std::vector<std::string> result;
 
         // loop over iterator
-        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
-        {
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr) {
             //check if this is file
             if (is_regular_file(itr->path())) {
                 result.push_back(itr->path().filename().string());
@@ -36,13 +42,13 @@ public:
         }
         return result;
     }
-    std::vector<path> getAllFilesPath(){
+
+    std::vector<path> getAllFilesPath() {
         directory_iterator end_itr;
         std::vector<path> result;
 
         // loop over iterator
-        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
-        {
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr) {
             //check if this is file
             if (is_regular_file(itr->path())) {
                 result.push_back(itr->path());
@@ -56,23 +62,29 @@ public:
         std::string fileNamesAndSizes = "";
 
         // loop over iterator
-        for (directory_iterator itr(dirPath); itr != end_itr; ++itr)
-        {
+        for (directory_iterator itr(dirPath); itr != end_itr; ++itr) {
             //check if this is file
             if (is_regular_file(itr->path())) {
-                fileNamesAndSizes+=itr->path().filename().string()+std::to_string(boost::filesystem::file_size(itr->path()));
+                fileNamesAndSizes +=
+                        itr->path().filename().string() + std::to_string(boost::filesystem::file_size(itr->path()));
             }
         }
         boost::hash<std::string> string_hash;
 
         return string_hash(fileNamesAndSizes);
     }
-    ~DirManagment(){
+
+    static bool isValidDirectory(const std::string &path) {
+        return is_directory(path);
     }
+
+    ~DirManagment() {
+    }
+
 private:
     const std::string dirPathName;
     const path dirPath;
 
-
 };
+
 #endif //FILEEXCHANGER_DIRMANAGMENT_H

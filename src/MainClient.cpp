@@ -3,22 +3,18 @@
 //
 #include <iostream>
 
-#include "Client.h"
+#include "include/Client.h"
 
 #include "include/DataBase.h"
 #include "include/DirManagment.h"
 
 int main()
 {
-    std::cout << "Client main" << std::endl;
-
-    DirManagment dir("upload/");
-
-    std::cout << dir.calculateDirHash() << std::endl;
     Client client;
-
     client.connectToBroker();
 
 
+    ClientMenu clientMenu(client);
+    clientMenu.showMainMenu();
     return 0;
 }

@@ -26,5 +26,6 @@
 #include <fstream>
 #include <fcntl.h>
 #include <cstring>
+#include "ConstVariables.h"
 
 #endif //FILEEXCHANGER_INC_H
