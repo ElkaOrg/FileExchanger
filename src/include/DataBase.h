@@ -13,6 +13,19 @@
 #include <sstream>
 #include <iostream>
 
+/*
+ * ex of usage
+DataBase db("settings.txt");
+db.saveKey("path", "xyzdasdz");
+db.saveKey("path", "xyzdasdz");
+db.saveKey("path", "xyzdasdz3");
+db.saveKey("path", "xyzdasdz3");
+db.saveKey("path3", "xyzdasdz3");
+db.saveKey("path3", "xyzdasdz35");
+
+std::cout << db.getKey("path3");
+
+*/
 class DataBase {
 public:
     explicit DataBase();
