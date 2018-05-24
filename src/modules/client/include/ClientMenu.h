@@ -5,26 +5,23 @@
 #ifndef FILEEXCHANGER_CLIENTMENU_H
 #define FILEEXCHANGER_CLIENTMENU_H
 
-#include <../../../../src/include/Client.h>
 #include <memory>
 #include <../../../include/DataBase.h>
 #include <../../../include/DirManagment.h>
-
-class Client;
+#include "ClientConnection.h"
 
 class ClientMenu
 {
 private:
-    Client & client;
-    std::shared_ptr<DataBase> clientDb;
-
+    std::shared_ptr<DataBase> clientDb = std::make_shared<DataBase>(clientSettingsFile);
+    ClientConnection clientConnection = ClientConnection(clientDb);
     void menuManageConnection();
     void menuSettings();
 
     void sayUnknownOption();
 
 public:
-    ClientMenu(Client & client);
+    ClientMenu();
 
     void showMainMenu();
 };

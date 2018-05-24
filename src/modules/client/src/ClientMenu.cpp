@@ -1,10 +1,10 @@
 //
 // Created by gnowacki on 07.05.18.
 //
+#include <inc.h>
 #include "../include/ClientMenu.h"
 
-ClientMenu::ClientMenu(Client &client) : client(client) {
-    clientDb = std::make_shared<DataBase>(clientSettingsFile);
+ClientMenu::ClientMenu(){
 
 }
 
@@ -22,7 +22,7 @@ void ClientMenu::showMainMenu() {
         switch (chosenNumber) {
             case 0:
                 std::cout << "Exiting..." << std::endl;
-                client.disconnectFromBroker();
+                clientConnection.disconnectFromBroker();
                 clientDb.get()->close();
                 return;
             case 1:
@@ -43,13 +43,12 @@ void ClientMenu::showMainMenu() {
             default:
                 std::cout << "Error has occured" << std::endl;
                 exit(0);
-                break;
         }
     }
 }
 
 void ClientMenu::menuManageConnection() {
-    if (client.isConnected()) {
+    if (clientConnection.isConnected()) {
         std::cout << "Currently you are connected!" << std::endl;
         std::cout << "0 - Back" << std::endl;
         std::cout << "1 - Disconnect" << std::endl;
@@ -65,11 +64,17 @@ void ClientMenu::menuManageConnection() {
     if (chosenNumber == 0) {
         return;
     } else if (chosenNumber == 1) {
-        if (client.isConnected()) {
-            client.disconnectFromBroker();
+        if (clientConnection.isConnected()) {
+            clientConnection.disconnectFromBroker();
             std::cout << "You disconected from broker!" << std::endl;
         } else {
-            client.connectToBroker();
+            std::string brokerIp = clientDb.get()->getKey(brokerIpKey);
+            if(brokerIp.size() == 0){
+                std::cout << "Broker ip not defined! " << std::endl;
+                return;
+            }
+            uint16_t brokerPort = 8080; //always
+            clientConnection.connectToBroker(brokerIp, brokerPort);
             std::cout << "You connected to broker!" << std::endl;
         }
     } else {
@@ -113,9 +118,10 @@ void ClientMenu::menuSettings() {
                 std::cin >> clientSharedFolder;
                 if (!DirManagment::isValidDirectory(clientSharedFolder)) {
                     std::cout << "Error!!! Directory not valid! Try again" << std::endl;
+                    std::cin.ignore(INT_MAX); //flush
                 }
                 else {
-                    clientDb.get()->saveKey(clientSharedFolderKey, brokerIp);
+                    clientDb.get()->saveKey(clientSharedFolderKey, clientSharedFolder);
                     std::cout << "Shared folder updated!" << std::endl;
                     return;
                 }

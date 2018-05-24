@@ -2,19 +2,14 @@
 // Created by gnowacki on 03.04.18.
 //
 #include <iostream>
-
-#include "include/Client.h"
+#include <ClientMenu.h>
 
 #include "include/DataBase.h"
 #include "include/DirManagment.h"
 
 int main()
 {
-    Client client;
-    client.connectToBroker();
-
-
-    ClientMenu clientMenu(client);
+    ClientMenu clientMenu;
     clientMenu.showMainMenu();
     return 0;
 }
