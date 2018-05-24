@@ -15,6 +15,7 @@
 class ClientConnection {
 private:
     int socketId = 0;
+    pthread_t recvThread;
 
     bool sendEhlo();
     std::shared_ptr<DataBase> clientDb;
@@ -34,5 +35,8 @@ public:
     bool sayDontHaveFile(const std::string &fileName);
 
     bool sendFile(const std::string &filePath);
+
+    void startRecv();
+    static void * recvThreadFunction(void *clientConnection);
 };
 #endif //FILEEXCHANGER_CLIENTCONNECTION_H
