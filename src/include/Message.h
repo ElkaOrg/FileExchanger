@@ -8,7 +8,7 @@
 #include <stdint-gcc.h>
 
 typedef struct message_header {
-    uint8_t type; //
+    uint32_t type; //
     uint32_t size; //size of body
     uint8_t body[];
 } message_header;

@@ -8,11 +8,12 @@
 #include <string>
 
 //in client
-const std::string clientSettingsFile = "clientSettings.db";
+static const std::string clientSettingsFile = "clientSettings.db";
 
-const std::string clientSharedFolderKey = "shared-folder";
-const std::string brokerIpKey = "broker-ip";
+static const std::string clientSharedFolderKey = "shared-folder";
+static const std::string brokerIpKey = "broker-ip";
 
-const std::string brokerSettingsFile = "brokerSettings.db";
+static const std::string brokerSettingsFile = "brokerSettings.db";
 
+static const int fileNameMaxLength = 40;
 #endif //FILEEXCHANGER_CONSTVARIABLES_H
