@@ -8,6 +8,7 @@
 
 /* Null, because instance will be initialized on demand. */
 Broker* Broker::instancePtr = 0;
+std::map<int,std::vector<std::string>> Broker::clients;
 
 Broker* Broker::getInstance()
 {
