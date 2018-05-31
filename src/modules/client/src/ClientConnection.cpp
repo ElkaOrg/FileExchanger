@@ -43,7 +43,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
     ssize_t bytesRead = 0;
     char buf[512] = {0};
     char typeAndSize[8] = {0};
-    while((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
+    while ((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
         memcpy(typeAndSize, buf, sizeof(typeAndSize));
         auto *header = (struct message_header *) typeAndSize;
         header->type = ntohl(header->type);
@@ -101,7 +101,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
                 } else {
                     DirManagment dirMgmt = DirManagment(folderPath);
-                    connection->sendFile(folderPath + std::string(fileName));
+                    connection->sendFile(folderPath + std::string(fileName), std::string(fileName));
                 }
                 break;
             }
@@ -141,6 +141,7 @@ void ClientConnection::disconnectFromBroker() {
 bool ClientConnection::isConnected() {
     return socketId > 0;
 }
+
 bool ClientConnection::getAllFiles() {
     message_header msg;
     msg.type = htonl(3);
@@ -292,9 +293,9 @@ bool ClientConnection::sayDontHaveFile(const std::string &fileName) {
     return true;
 }
 
-bool ClientConnection::sendFile(const std::string &filePath) {
+bool ClientConnection::sendFile(const std::string &filePath, const std::string &fileName) {
 
-    const int maxTxtBuffer = 1024;
+    const int maxTxtBuffer = 1024; // how many data can be readed from file
 
     FILE *fp = fopen(filePath.c_str(), "rb");
     if (fp == NULL) {
@@ -307,8 +308,8 @@ bool ClientConnection::sendFile(const std::string &filePath) {
     fseek(fp, 0, 0);
 
     message_header msg;
-    msg.type = htonl(4);
-    msg.size = htonl(fileNameMaxLength + fileSize);
+    msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
+    msg.type = htonl(8);
 
     //set max msg buffer
 
@@ -317,22 +318,35 @@ bool ClientConnection::sendFile(const std::string &filePath) {
     char *buffer;
     size_t bufferSize = 0;
 
-    if (size > sizeof(msg) + maxTxtBuffer) {
-        buffer = new char[maxTxtBuffer + sizeof(msg)];
-        bufferSize = maxTxtBuffer + sizeof(msg);
+    if (size > fileNameMaxLength + sizeof(msg) + maxTxtBuffer) { //divide files
+        msg.size = htonl(fileNameMaxLength + maxTxtBuffer);
+        bufferSize = maxTxtBuffer + sizeof(msg) + fileNameMaxLength;
+        buffer = new char[bufferSize];
     } else {
-        buffer = new char[size];
+        buffer = new char[size]; // all fits
         bufferSize = size;
     }
     memset(buffer, 0x00, bufferSize);
 
     memcpy(buffer, &msg, sizeof(msg));//first read
-    size_t nread = fread(buffer + sizeof(msg), 1, maxTxtBuffer, fp);
+    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+
+    size_t nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp);
     fileSize -= nread;
     write(socketId, buffer, bufferSize);
     while (fileSize > 0) {
-        memset(buffer, 0x00, bufferSize);
-        nread = fread(buffer, 1, bufferSize, fp);
+        memset(buffer, 0x00, bufferSize); // clean buffer
+        if (fileSize + fileNameMaxLength + sizeof(msg) < bufferSize) {
+            // if fileSize fits to buffer
+            msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
+        } else {
+            msg.size = htonl(fileNameMaxLength + maxTxtBuffer); //default, we assume that size fit to maxTextBuffer
+        }
+        msg.type = htonl(9); // 9 - continue sending file
+
+        memcpy(buffer, &msg, sizeof(msg));
+        memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+        nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp); // read again
         fileSize -= nread;
         /* If read was success, send data. */
         if (nread > 0) {
@@ -340,6 +354,7 @@ bool ClientConnection::sendFile(const std::string &filePath) {
             write(socketId, buffer, bufferSize);
         }
     }
+
     fclose(fp);//TODO error check
     delete[] buffer;
 

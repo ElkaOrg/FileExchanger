@@ -34,7 +34,7 @@ public:
 
     bool sayDontHaveFile(const std::string &fileName);
 
-    bool sendFile(const std::string &filePath);
+    bool sendFile(const std::string &filePath, const std::string &fileNam);
 
     void startRecv();
     static void * recvThreadFunction(void *clientConnection);
