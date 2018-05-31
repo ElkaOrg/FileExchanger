@@ -215,6 +215,7 @@ std::pair<message_header*,char*> Broker::receiveMessage(int socket)
     char typeAndSize[8] = {0};
 
     auto bytesRead = read(socket, buff, sizeof(buff));
+    memcpy(typeAndSize, buff, sizeof(typeAndSize));
     auto *header = (struct message_header *) typeAndSize;
     header->type = ntohl(header->type);
     header->size = ntohl(header->size);
