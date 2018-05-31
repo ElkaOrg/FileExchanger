@@ -5,6 +5,7 @@
 #include <Message.h>
 #include <boost/shared_ptr.hpp>
 #include <DirManagment.h>
+#include <sys/poll.h>
 #include "../include/ClientConnection.h"
 
 int ClientConnection::connectToBroker(const std::string &brokerIp, const uint16_t brokerPort) {
@@ -39,11 +40,10 @@ void ClientConnection::startRecv() {
 
 void *ClientConnection::recvThreadFunction(void *object) {
     auto *connection = (ClientConnection *) object;
+    ssize_t bytesRead = 0;
     char buf[512] = {0};
     char typeAndSize[8] = {0};
-    ssize_t bytesRead = 0;
-    do {
-        bytesRead = read(connection->socketId, buf, sizeof(buf));
+    while((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
         memcpy(typeAndSize, buf, sizeof(typeAndSize));
         auto *header = (struct message_header *) typeAndSize;
         header->type = ntohl(header->type);
@@ -52,7 +52,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
         std::string folderPath = "";
         char fileName[40];
 
-        std::cout << "Got header!" << header->type << std::endl;
+        std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
 
         switch (header->type) {
             case 0: {
@@ -127,8 +127,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
             default:
                 throw std::runtime_error("Unknown header");
         }
-
-    } while (bytesRead > 0);
+    }
     //start reading again
 
     recvThreadFunction(object);
