@@ -48,8 +48,8 @@ void Broker::terminate()
 void Broker::sendRequest(int socketId, uint32_t requestType)
 {
     message_header msg;
-    msg.type = requestType;
-    msg.size = 0;
+    msg.type = htonl(requestType);
+    msg.size = htonl(0);
 
     size_t size = sizeof(msg);
     auto buffer = new char[size];
@@ -79,7 +79,7 @@ int Broker::checkFilename(std::string filename)
 void Broker::sendErrorToClient(int socket, std::string message)
 {
     message_header msg;
-    msg.type = 5;
+    msg.type = htonl(5);
     msg.size = htonl(sizeof(message));
 
     size_t size = sizeof(msg) + msg.size;
