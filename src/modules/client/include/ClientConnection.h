@@ -38,5 +38,7 @@ public:
 
     void startRecv();
     static void * recvThreadFunction(void *clientConnection);
+
+    bool getAllFiles();
 };
 #endif //FILEEXCHANGER_CLIENTCONNECTION_H

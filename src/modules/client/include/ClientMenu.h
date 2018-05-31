@@ -24,6 +24,8 @@ public:
     ClientMenu();
 
     void showMainMenu();
+
+    void menuDownloadFile();
 };
 
 #endif //FILEEXCHANGER_CLIENTMENU_H

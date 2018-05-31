@@ -15,7 +15,7 @@ void ClientMenu::showMainMenu() {
         std::cout << "0 - Quit" << std::endl;
         std::cout << "1 - Manage connection to broker" << std::endl;
         std::cout << "2 - Client Settings" << std::endl;
-        std::cout << "3 - Send file by name" << std::endl;
+        std::cout << "3 - Download file" << std::endl;
 
         std::cin >> chosenNumber;
 
@@ -32,21 +32,43 @@ void ClientMenu::showMainMenu() {
                 menuSettings();
                 break;
 
-            case 3: {
-                char filePath[100];
-                std::cout << "Send file by name chosen. Specify path: " << std::endl;
-                std::cin >> filePath;
+            case 3:
+                menuDownloadFile();
                 //FileTransfer fileTransfer(socketDescriptor);
                 //fileTransfer.sendOneFile(filePath);
                 break;
-            }
             default:
                 std::cout << "Error has occured" << std::endl;
                 exit(0);
         }
     }
 }
+void ClientMenu::menuDownloadFile() {
+    std::cout << "0 - Back" << std::endl;
+    std::cout << "1 - Get All files" << std::endl;
+    std::cout << "2 - Download File" << std::endl;
+    int chosenNumber = 0;
+    std::cin >> chosenNumber;
+    switch(chosenNumber){
+        case 1:
+            clientConnection.getAllFiles();
+            break;
+        case 2: {
+            std::string fileName;
+            std::cout << "Type filename:" << std::endl;
+            std::cin >> fileName;
+            if (fileName.size() > 40) {
+                std::cout << "File name could not have more than 40 characters!" << std::endl;
+                return;
+            }
+            clientConnection.requestForFile(fileName);
+            break;
+        }
+        case 0: default:
+            return;
+    }
 
+}
 void ClientMenu::menuManageConnection() {
     if (clientConnection.isConnected()) {
         std::cout << "Currently you are connected!" << std::endl;

@@ -28,7 +28,7 @@ int ClientConnection::connectToBroker(const std::string &brokerIp, const uint16_
 
     //send ehlo
     sendEhlo();
-
+    startRecv();
     return socketId;
 }
 
@@ -74,8 +74,17 @@ void *ClientConnection::recvThreadFunction(void *object) {
                 }
                 break;
             }
-            case 3:
+            case 3: {
+
+                int nrOfFiles = header->size / 40;
+                for (int i = 0; i <= nrOfFiles; i++) {
+                    char filename[40] = {0};
+                    memcpy(filename, buf + 8 + 40 * i, sizeof(filename));
+                    std::cout << fileName << std::endl;
+                }
+
                 break;
+            }
             case 4: {
                 if (header->size != 40) {
                     throw std::runtime_error("Invalid file size");
@@ -129,6 +138,21 @@ void ClientConnection::disconnectFromBroker() {
 bool ClientConnection::isConnected() {
     return socketId > 0;
 }
+bool ClientConnection::getAllFiles() {
+    message_header msg;
+    msg.type = htonl(3);
+    msg.size = 0;
+
+    size_t size = sizeof(msg);
+    auto buffer = new char[size];
+    memset(buffer, 0x00, size);
+
+    memcpy(buffer, &msg, size);
+
+    write(socketId, buffer, size);
+    delete[] buffer;
+    return true;
+}
 
 bool ClientConnection::sendEhlo() {
     message_header msg;
@@ -177,9 +201,10 @@ bool ClientConnection::sendEhlo() {
     requestForFile(requestFile);
      */
 
+    /*
     /**
      * send file
-     */
+
     std::string folderPath = clientDb.get()->getKey(clientSharedFolderKey);
     if (folderPath == "") {
         std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
@@ -187,7 +212,7 @@ bool ClientConnection::sendEhlo() {
         DirManagment dirMgmt = DirManagment(folderPath);
         sendFile(folderPath + "f1");
     }
-
+*/
     return true;
 }
 
