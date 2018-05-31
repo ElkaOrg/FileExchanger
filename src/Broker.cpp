@@ -55,6 +55,7 @@ void Broker::sendRequest(int socketId, uint32_t requestType)
     auto buffer = new char[size];
     memset(buffer, 0x00, size);
     memcpy(buffer, &msg, size);
+    std::cout << "Sending request with header: " << requestType << " to client with ID: " << socketId << std::endl;
     write(socketId, buffer, size);
     delete[] buffer;
 }
@@ -101,12 +102,14 @@ void* Broker::handleClient(void* ptr)
 
     auto ehlo = receiveMessage(socket);
     auto header = ehlo.first;
+
     if (header->type != 0)
     {
         throw std::runtime_error("Didn't receive ehlo!");
     }
     else
     {
+        std::cout << "Got ehlo from client with ID: " << socket << std::endl;
         sendRequest(socket, 1); //filenames request
         sendRequest(socket, 2); //hashcode request
     }
@@ -116,6 +119,7 @@ void* Broker::handleClient(void* ptr)
         auto timeTmp = std::chrono::system_clock::now();
         if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timeTmp).count() >= 18000)
         {
+            std::cout << "Sending hashcode request to client with ID: " << socket << std::endl;
             now = timeTmp;
             sendRequest(socket, 2);
         }
@@ -123,13 +127,15 @@ void* Broker::handleClient(void* ptr)
         auto message = receiveMessage(socket);
         if (message.first)
         {
+            std::cout << "Got message with header type: " << message.first->type << std::endl;
             switch (message.first->type)
             {
-                case (0):
+                case (0): // ehlo
                 {
+                    std::cout << "Ehlo was already received. :c";
                     throw std::runtime_error("Something went wrong - ehlo was already received!");
                 }
-                case (1):
+                case (1): // client sent us his filenames
                 {
                     int nrOfFiles = message.first->size/40; // ??? na pewno dobrze ???
                     for(int i=0;i<=nrOfFiles;i++)
@@ -141,18 +147,24 @@ void* Broker::handleClient(void* ptr)
                     }
                     clients[socket] = filenames;
                 }
-                case (2):
+                case (2): // client sent us hashcode
                 {
                     char tmp_hash[8];
                     memset(tmp_hash, 0x00, sizeof(tmp_hash));
                     memcpy(tmp_hash, message.second+8, sizeof(tmp_hash));
                     if ((size_t) tmp_hash != client_hashcode)
                     {
+                        std::cout << "Client with ID " << socket << " hashcode changed. Asking for filenames" << std::endl;
                         client_hashcode = (size_t) tmp_hash;
                         sendRequest(socket, 1);
                     }
                 }
-                case (3):
+                case (3): // client wants list of avaliable files
+                {
+                    // TODO
+                    // wyslac liste wszystkich dostepnych plikow
+                }
+                case (4): // client asking us for a file
                 {
                     char filename[40];
                     if (header->size != 40) {
@@ -164,36 +176,35 @@ void* Broker::handleClient(void* ptr)
                     int socketId = checkFilename(filename);
                     if (socketId == -1)
                     {
+                        std::cout << "Filename " << filename << "is not avaliable" << std::endl;
                         sendErrorToClient(socket, "No such file found.");
                     }
-
-                    // TODO
-                    // zamow pliczek
+                    else
+                    {
+                        std::cout << "Filename " << filename << "found in files of client with ID: " << socket << std::endl;
+                        // TODO
+                        // zamow pliczek
+                    }
                 }
-                case (4):
+                case (5): // client sent us a file
                 {
                     // TODO
                     // odbierz pliczek
                     // przeslij dalej
                 }
-                case (5):
+                case (6): // client doesn't have that file anymore
                 {
-                    // such header means that client
-                    // no longer has that file
                     sendErrorToClient(socket, "No such file found.");
                 }
-                default:
+                default: // bad header
                 {
                     throw std::runtime_error("Unknown header!");
                 }
             }
         }
     } while (client_hashcode != 0);
-    // we assume that if we don't get hashcode
-    // connection is dead
 
-    std::cout<<"handleClient"<<std::endl;
-
+    std::cout << "Didn't receive hashcode - client probably dead" << std::endl;
     close(socket);
     delete socketWrapper;
 }
@@ -207,6 +218,9 @@ std::pair<message_header*,char*> Broker::receiveMessage(int socket)
     auto *header = (struct message_header *) typeAndSize;
     header->type = ntohl(header->type);
     header->size = ntohl(header->size);
+
+    //TEST
+    std::cout << header->type << std::endl;
 
     return std::make_pair(header, buff);
 }
@@ -247,7 +261,7 @@ void Broker::waitForClients()
 
     signal(SIGINT, Broker::terminateWrapper);
 
-
+    std::cout << "Begin waiting for clients..." << std::endl;
     while(true)
     {
         msgsock = accept(sock, (struct sockaddr *) &client_addr, &client_addr_len);
@@ -259,6 +273,7 @@ void Broker::waitForClients()
         {
             pthread_t thread;
             SocketWrapper* socketWrapper = new SocketWrapper(msgsock);
+            std::cout << "Client acquired! His ID: " << socketWrapper->getSocket() << std::endl;
 
             pthread_create(&thread, NULL, Broker::handleClient, (void *) socketWrapper);
 
