@@ -27,8 +27,8 @@ int ClientConnection::connectToBroker(const std::string &brokerIp, const uint16_
     }
 
     //send ehlo
-    sendEhlo();
     startRecv();
+    sendEhlo();
     return socketId;
 }
 
@@ -44,6 +44,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
     ssize_t bytesRead = 0;
     do {
         bytesRead = read(connection->socketId, buf, sizeof(buf));
+        memcpy(typeAndSize, buf, sizeof(typeAndSize));
         auto *header = (struct message_header *) typeAndSize;
         header->type = ntohl(header->type);
         header->size = ntohl(header->size);
@@ -51,9 +52,12 @@ void *ClientConnection::recvThreadFunction(void *object) {
         std::string folderPath = "";
         char fileName[40];
 
+        std::cout << "Got header!" << header->type << std::endl;
+
         switch (header->type) {
-            case 0:
+            case 0: {
                 break;
+            }
             case 1: {
                 folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
                 if (folderPath.empty()) {
