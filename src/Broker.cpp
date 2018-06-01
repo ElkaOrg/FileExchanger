@@ -110,8 +110,8 @@ void* Broker::handleClient(void* ptr)
     else
     {
         std::cout << "Got ehlo from client with ID: " << socket << std::endl;
-        sendRequest(socket, 1); //filenames request
-        sendRequest(socket, 2); //hashcode request
+//        sendRequest(socket, 1); //filenames request
+//        sendRequest(socket, 2); //hashcode request
     }
 
     do
@@ -127,74 +127,82 @@ void* Broker::handleClient(void* ptr)
         auto message = receiveMessage(socket);
         if (message.first)
         {
-            std::cout << "Got message with header type: " << message.first->type << std::endl;
+            std::cout << "Got message with header type: " << message.first->type;
+            std::cout << " from client with ID: " << socket << std::endl;
             switch (message.first->type)
             {
                 case (0): // ehlo
                 {
-                    std::cout << "Ehlo was already received. :c";
+                    std::cout << "Ehlo was already received. :c" << std::endl;
                     throw std::runtime_error("Something went wrong - ehlo was already received!");
                 }
                 case (1): // client sent us his filenames
                 {
-                    int nrOfFiles = message.first->size/40; // ??? na pewno dobrze ???
-                    for(int i=0;i<=nrOfFiles;i++)
-                    {
-                        char filename[40];
-                        memset(filename, 0x00, sizeof(filename));
-                        memcpy(filename, message.second+8+40*i, sizeof(filename));
-                        filenames[i] = filename;
-                    }
-                    clients[socket] = filenames;
+//                    int nrOfFiles = message.first->size/40; // ??? na pewno dobrze ???
+//                    for(int i=0;i<=nrOfFiles;i++)
+//                    {
+//                        char filename[40];
+//                        memset(filename, 0x00, sizeof(filename));
+//                        memcpy(filename, message.second+8+40*i, sizeof(filename));
+//                        filenames[i] = filename;
+//                    }
+//                    clients[socket] = filenames;
+                    break;
                 }
                 case (2): // client sent us hashcode
                 {
-                    char tmp_hash[8];
-                    memset(tmp_hash, 0x00, sizeof(tmp_hash));
-                    memcpy(tmp_hash, message.second+8, sizeof(tmp_hash));
-                    if ((size_t) tmp_hash != client_hashcode)
-                    {
-                        std::cout << "Client with ID " << socket << " hashcode changed. Asking for filenames" << std::endl;
-                        client_hashcode = (size_t) tmp_hash;
-                        sendRequest(socket, 1);
-                    }
+//                    char tmp_hash[8];
+//                    memset(tmp_hash, 0x00, sizeof(tmp_hash));
+//                    memcpy(tmp_hash, message.second+8, sizeof(tmp_hash));
+//                    if ((size_t) tmp_hash != client_hashcode)
+//                    {
+//                        std::cout << "Client with ID " << socket << " hashcode changed. Asking for filenames" << std::endl;
+//                        client_hashcode = (size_t) tmp_hash;
+//                        sendRequest(socket, 1);
+//                    }
+                    break;
                 }
                 case (3): // client wants list of avaliable files
                 {
+                    std::cout << "Sending list of avaliable files to client with ID: " << socket << std::endl;
                     // TODO
                     // wyslac liste wszystkich dostepnych plikow
+                    break;
                 }
                 case (4): // client asking us for a file
                 {
-                    char filename[40];
-                    if (header->size != 40) {
-                        throw std::runtime_error("Invalid file size");
-                    }
-                    memset(filename, 0x00, sizeof(filename));
-                    memcpy(filename, message.second + 8, sizeof(filename));
-
-                    int socketId = checkFilename(filename);
-                    if (socketId == -1)
-                    {
-                        std::cout << "Filename " << filename << "is not avaliable" << std::endl;
-                        sendErrorToClient(socket, "No such file found.");
-                    }
-                    else
-                    {
-                        std::cout << "Filename " << filename << "found in files of client with ID: " << socket << std::endl;
-                        // TODO
-                        // zamow pliczek
-                    }
+//                    char filename[40];
+//                    if (header->size != 40) {
+//                        throw std::runtime_error("Invalid file size");
+//                    }
+//                    memset(filename, 0x00, sizeof(filename));
+//                    memcpy(filename, message.second + 8, sizeof(filename));
+//
+//                    int socketId = checkFilename(filename);
+//                    if (socketId == -1)
+//                    {
+//                        std::cout << "Filename " << filename << "is not avaliable" << std::endl;
+//                        sendErrorToClient(socket, "No such file found.");
+//                    }
+//                    else
+//                    {
+//                        std::cout << "Filename " << filename << "found in files of client with ID: " << socket << std::endl;
+//                        // TODO
+//                        // zamow pliczek
+//                    }
+                    break;
                 }
                 case (5): // client sent us a file
                 {
                     // TODO
                     // odbierz pliczek
                     // przeslij dalej
+                    break;
                 }
                 case (6): // client doesn't have that file anymore
                 {
-                    sendErrorToClient(socket, "No such file found.");
+//                    sendErrorToClient(socket, "No such file found.");
+                    break;
                 }
                 default: // bad header
                 {
