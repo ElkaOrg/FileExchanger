@@ -140,7 +140,7 @@ void* Broker::handleClient(void* ptr)
                 {
                     int nrOfFiles = message.first->size/40; // ??? na pewno dobrze ???
                     std::cout << "Client with ID: " << socket << " files: " << std::endl;
-                    for(int i=0;i<=nrOfFiles;i++)
+                    for(int i=0;i<nrOfFiles;i++)
                     {
                         char filename[40];
                         memset(filename, 0x00, sizeof(filename));
