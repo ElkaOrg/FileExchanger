@@ -40,10 +40,10 @@ void ClientConnection::startRecv() {
 
 void *ClientConnection::recvThreadFunction(void *object) {
     auto *connection = (ClientConnection *) object;
-    ssize_t bytesRead = 0;
     char buf[512] = {0};
     char typeAndSize[8] = {0};
     while(true) {
+        ssize_t bytesRead = 0;
         while ((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
             memcpy(typeAndSize, buf, sizeof(typeAndSize));
             auto *header = (struct message_header *) typeAndSize;
@@ -247,12 +247,12 @@ bool ClientConnection::sendFilesHashCode(std::size_t hashCode) {
     msg.type = htonl(2);
     msg.size = htonl(sizeof(size_t));
 
-    size_t size = sizeof(msg) + msg.size;
+    size_t size = sizeof(msg) + sizeof(size_t);
     auto buffer = new char[size];
     memset(buffer, 0x00, size);
 
     memcpy(buffer, &msg, sizeof(msg));
-    memcpy(buffer + sizeof(msg), &hashCode, msg.size);
+    memcpy(buffer + sizeof(msg), (char*) &hashCode, sizeof(size_t));
     write(socketId, buffer, size);
     delete[] buffer;
 
