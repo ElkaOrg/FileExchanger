@@ -112,7 +112,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     }
                     memset(fileName, 0x00, sizeof(fileName));
                     memcpy(fileName, buf + 8, sizeof(fileName));
-                    std::cout << "Nie MA TAKIEGO PLIKU!" << std::string(fileName) << std::endl;
+                    std::cout << "Nie ma takiego pliku!" << std::string(fileName) << std::endl;
                     break;
                 }
                 case 6: {

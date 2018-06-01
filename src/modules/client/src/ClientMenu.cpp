@@ -14,7 +14,7 @@ void ClientMenu::showMainMenu() {
     while (1) {
         std::cout << "0 - Quit" << std::endl;
         std::cout << "1 - Manage connection to broker" << std::endl;
-        std::cout << "2 - Client Settings" << std::endl;
+        std::cout << "2 - Client settings" << std::endl;
         std::cout << "3 - Download file" << std::endl;
 
         std::cin >> chosenNumber;
@@ -45,8 +45,8 @@ void ClientMenu::showMainMenu() {
 }
 void ClientMenu::menuDownloadFile() {
     std::cout << "0 - Back" << std::endl;
-    std::cout << "1 - Get All files" << std::endl;
-    std::cout << "2 - Download File" << std::endl;
+    std::cout << "1 - Get all files" << std::endl;
+    std::cout << "2 - Download file" << std::endl;
     int chosenNumber = 0;
     std::cin >> chosenNumber;
     switch(chosenNumber){
@@ -58,7 +58,7 @@ void ClientMenu::menuDownloadFile() {
             std::cout << "Type filename:" << std::endl;
             std::cin >> fileName;
             if (fileName.size() > 40) {
-                std::cout << "File name could not have more than 40 characters!" << std::endl;
+                std::cout << "File name cant have more than 40 characters!" << std::endl;
                 return;
             }
             clientConnection.requestForFile(fileName);
@@ -88,7 +88,7 @@ void ClientMenu::menuManageConnection() {
     } else if (chosenNumber == 1) {
         if (clientConnection.isConnected()) {
             clientConnection.disconnectFromBroker();
-            std::cout << "You disconected from broker!" << std::endl;
+            std::cout << "You are disconnected from broker!" << std::endl;
         } else {
             std::string brokerIp = clientDb.get()->getKey(brokerIpKey);
             if(brokerIp.size() == 0){
@@ -97,7 +97,7 @@ void ClientMenu::menuManageConnection() {
             }
             uint16_t brokerPort = 8080; //always
             clientConnection.connectToBroker(brokerIp, brokerPort);
-            std::cout << "You connected to broker!" << std::endl;
+            std::cout << "You are connected to broker!" << std::endl;
         }
     } else {
         sayUnknownOption();
