@@ -43,94 +43,94 @@ void *ClientConnection::recvThreadFunction(void *object) {
     ssize_t bytesRead = 0;
     char buf[512] = {0};
     char typeAndSize[8] = {0};
-    while ((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
-        memcpy(typeAndSize, buf, sizeof(typeAndSize));
-        auto *header = (struct message_header *) typeAndSize;
-        header->type = ntohl(header->type);
-        header->size = ntohl(header->size);
+    while(true) {
+        while ((bytesRead = read(connection->socketId, buf, sizeof(buf))) > 0) {
+            memcpy(typeAndSize, buf, sizeof(typeAndSize));
+            auto *header = (struct message_header *) typeAndSize;
+            header->type = ntohl(header->type);
+            header->size = ntohl(header->size);
 
-        std::string folderPath = "";
-        char fileName[40];
+            std::string folderPath = "";
+            char fileName[40];
 
-        std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
+            std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
 
-        switch (header->type) {
-            case 0: {
-                break;
-            }
-            case 1: {
-                folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
-                if (folderPath.empty()) {
-                    std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-                } else {
-                    DirManagment dirMgmt = DirManagment(folderPath);
-                    connection->sendFileNames(dirMgmt.getAllFileNames());
+            switch (header->type) {
+                case 0: {
+                    break;
                 }
-                break;
-            }
-            case 2: {
-                folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
-                if (folderPath.empty()) {
-                    std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-                } else {
-                    DirManagment dirMgmt = DirManagment(folderPath);
-                    connection->sendFilesHashCode(dirMgmt.calculateDirHash());
+                case 1: {
+                    folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
+                    if (folderPath.empty()) {
+                        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
+                    } else {
+                        DirManagment dirMgmt = DirManagment(folderPath);
+                        connection->sendFileNames(dirMgmt.getAllFileNames());
+                    }
+                    break;
                 }
-                break;
-            }
-            case 3: {
+                case 2: {
+                    folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
+                    if (folderPath.empty()) {
+                        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
+                    } else {
+                        DirManagment dirMgmt = DirManagment(folderPath);
+                        connection->sendFilesHashCode(dirMgmt.calculateDirHash());
+                    }
+                    break;
+                }
+                case 3: {
 
-                int nrOfFiles = header->size / 40;
-                for (int i = 0; i <= nrOfFiles; i++) {
-                    char filename[40] = {0};
-                    memcpy(filename, buf + 8 + 40 * i, sizeof(filename));
-                    std::cout << fileName << std::endl;
-                }
+                    int nrOfFiles = header->size / 40;
+                    for (int i = 0; i <= nrOfFiles; i++) {
+                        char filename[40] = {0};
+                        memcpy(filename, buf + 8 + 40 * i, sizeof(filename));
+                        std::cout << fileName << std::endl;
+                    }
 
-                break;
-            }
-            case 4: {
-                if (header->size != 40) {
-                    throw std::runtime_error("Invalid file size");
+                    break;
                 }
-                memset(fileName, 0x00, sizeof(fileName));
-                memcpy(fileName, buf + 8, sizeof(fileName));
+                case 4: {
+                    if (header->size != 40) {
+                        throw std::runtime_error("Invalid file size");
+                    }
+                    memset(fileName, 0x00, sizeof(fileName));
+                    memcpy(fileName, buf + 8, sizeof(fileName));
 
-                std::string folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
-                if (folderPath == "") {
-                    std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-                } else {
-                    DirManagment dirMgmt = DirManagment(folderPath);
-                    connection->sendFile(folderPath + std::string(fileName), std::string(fileName));
+                    std::string folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
+                    if (folderPath == "") {
+                        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
+                    } else {
+                        DirManagment dirMgmt = DirManagment(folderPath);
+                        connection->sendFile(folderPath + std::string(fileName), std::string(fileName));
+                    }
+                    break;
                 }
-                break;
-            }
-            case 5: {
-                if (header->size != 40) {
-                    throw std::runtime_error("Invalid file size");
+                case 5: {
+                    if (header->size != 40) {
+                        throw std::runtime_error("Invalid file size");
+                    }
+                    memset(fileName, 0x00, sizeof(fileName));
+                    memcpy(fileName, buf + 8, sizeof(fileName));
+                    std::cout << "Nie MA TAKIEGO PLIKU!" << std::string(fileName) << std::endl;
+                    break;
                 }
-                memset(fileName, 0x00, sizeof(fileName));
-                memcpy(fileName, buf + 8, sizeof(fileName));
-                std::cout << "Nie MA TAKIEGO PLIKU!" << std::string(fileName) << std::endl;
-                break;
-            }
-            case 6: {
-                if (header->size > 500) {
-                    throw std::runtime_error("Tresc bledu jest za dluga!");
-                }
-                char errorMsg[header->size] = {0};
-                memcpy(errorMsg, buf + 8, sizeof(header->size));
-                std::cout << "Broker Blad!: " << errorMsg << std::endl;
+                case 6: {
+                    if (header->size > 500) {
+                        throw std::runtime_error("Tresc bledu jest za dluga!");
+                    }
+                    char errorMsg[header->size] = {0};
+                    memcpy(errorMsg, buf + 8, sizeof(header->size));
+                    std::cout << "Broker Blad!: " << errorMsg << std::endl;
 
-                break;
+                    break;
+                }
+                default:
+                    throw std::runtime_error("Unknown header");
             }
-            default:
-                throw std::runtime_error("Unknown header");
         }
     }
     //start reading again
-
-    recvThreadFunction(object);
 }
 
 void ClientConnection::disconnectFromBroker() {
