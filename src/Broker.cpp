@@ -111,26 +111,23 @@ void* Broker::handleClient(void* ptr)
     {
         std::cout << "Got ehlo from client with ID: " << socket << std::endl;
         sendRequest(socket, 1); //filenames request
+        sleep(1);
         sendRequest(socket, 2); //hashcode request
     }
 
-    do
-    {
+    do {
         auto timeTmp = std::chrono::system_clock::now();
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timeTmp).count() >= 18000)
-        {
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timeTmp).count() >= 18000) {
             std::cout << "Sending hashcode request to client with ID: " << socket << std::endl;
             now = timeTmp;
             sendRequest(socket, 2);
         }
 
         auto message = receiveMessage(socket);
-        if (message.first)
-        {
+        if (message.first) {
             std::cout << "Got message with header type: " << message.first->type;
             std::cout << " from client with ID: " << socket << std::endl;
-            switch (message.first->type)
-            {
+            switch (message.first->type) {
                 case (0): // ehlo
                 {
                     std::cout << "Ehlo was already received. :c" << std::endl;
@@ -138,13 +135,12 @@ void* Broker::handleClient(void* ptr)
                 }
                 case (1): // client sent us his filenames
                 {
-                    int nrOfFiles = message.first->size/40; // ??? na pewno dobrze ???
+                    int nrOfFiles = message.first->size / 40; // ??? na pewno dobrze ???
                     std::cout << "Client with ID: " << socket << " files: " << std::endl;
-                    for(int i=0;i<nrOfFiles;i++)
-                    {
+                    for (int i = 0; i < nrOfFiles; i++) {
                         char filename[40];
                         memset(filename, 0x00, sizeof(filename));
-                        memcpy(filename, message.second+8+40*i, sizeof(filename));
+                        memcpy(filename, message.second + 8 + 40 * i, sizeof(filename));
                         filenames.push_back(std::string(filename));
                         std::cout << "----> " << std::string(filename) << std::endl;
                     }
@@ -156,10 +152,10 @@ void* Broker::handleClient(void* ptr)
                 {
                     char tmp_hash[8];
                     memset(tmp_hash, 0x00, sizeof(tmp_hash));
-                    memcpy(tmp_hash, message.second+8, sizeof(tmp_hash));
-                    if ((size_t) tmp_hash != client_hashcode)
-                    {
-                        std::cout << "Client with ID " << socket << " hashcode changed. Asking for filenames" << std::endl;
+                    memcpy(tmp_hash, message.second + 8, sizeof(tmp_hash));
+                    if ((size_t) tmp_hash != client_hashcode) {
+                        std::cout << "Client with ID " << socket << " hashcode changed. Asking for filenames"
+                                  << std::endl;
                         client_hashcode = (size_t) tmp_hash;
                         sendRequest(socket, 1);
                     }
@@ -172,9 +168,9 @@ void* Broker::handleClient(void* ptr)
                     msg.type = htonl(3);
 
                     std::vector<std::string> filenamesToSend;
-                    for (auto const& client : clients) // loop through all clients
+                    for (auto const &client : clients) // loop through all clients
                     {
-                        for (auto const& filename : client.second) // loop through client files
+                        for (auto const &filename : client.second) // loop through client files
                         {
                             auto it = filenames.end();
                             filenames.insert(it, filename);
@@ -188,8 +184,7 @@ void* Broker::handleClient(void* ptr)
                     memcpy(buffer, &msg, sizeof(msg));
 
                     int i = 0;
-                    for (auto const& name : filenamesToSend)
-                    {
+                    for (auto const &name : filenamesToSend) {
                         memcpy(buffer + sizeof(msg) + fileNameMaxLength * i, name.c_str(), name.length());
                         i++;
                     }
@@ -209,14 +204,12 @@ void* Broker::handleClient(void* ptr)
                     memcpy(filename, message.second + 8, sizeof(filename));
 
                     int socketId = checkFilename(filename);
-                    if (socketId == -1)
-                    {
+                    if (socketId == -1) {
                         std::cout << "Filename " << filename << "is not avaliable" << std::endl;
                         sendErrorToClient(socket, "No such file found.");
-                    }
-                    else
-                    {
-                        std::cout << "Filename " << filename << "found in files of client with ID: " << socket << std::endl;
+                    } else {
+                        std::cout << "Filename " << filename << "found in files of client with ID: " << socket
+                                  << std::endl;
                         // TODO
                         // zamow pliczek
                     }
@@ -240,8 +233,9 @@ void* Broker::handleClient(void* ptr)
                 }
             }
         }
-    } while (client_hashcode != 0);
-
+    } while(true);
+    //} while (client_hashcode != 0);
+    //TO DO
     std::cout << "Didn't receive hashcode - client probably dead" << std::endl;
     close(socket);
     delete socketWrapper;
