@@ -15,5 +15,7 @@ static const std::string brokerIpKey = "broker-ip";
 
 static const std::string brokerSettingsFile = "brokerSettings.db";
 
+static const std::string brokerSharedDirectory = "~/broker_shared/";
+
 static const int fileNameMaxLength = 40;
 #endif //FILEEXCHANGER_CONSTVARIABLES_H

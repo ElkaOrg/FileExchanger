@@ -16,7 +16,7 @@ private:
     static std::map<int,std::vector<std::string>> clients;
 
 public:
-    void waitForClients(void);
+    void waitForClients();
 
     /* Static access method. */
     static Broker* getInstance();
@@ -31,6 +31,7 @@ private:
     static void sendRequest(int socketId, uint32_t requestType);
     static int checkFilename(std::string filename);
     static void sendErrorToClient(int socket, std::string message);
+    static bool checkFile(const std::string& name);
 
     void terminate();
 

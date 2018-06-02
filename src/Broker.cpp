@@ -210,35 +210,53 @@ void* Broker::handleClient(void* ptr)
                     } else {
                         std::cout << "Filename " << filename << "found in files of client with ID: " << socket
                                   << std::endl;
+
+                        if (checkFile(brokerSharedDirectory + filename)) {
+                            std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
+                        } else {
+                            //pobierz pliczek
+                            while (!checkFile(brokerSharedDirectory + filename))
+                            {
+                                sleep(1);
+                            }
+                        }
+
                         // TODO
-                        // zamow pliczek
+                        // wyslij pliczek spod brokerSharedDirectory + filename
+
+                        break;
                     }
-                    break;
-                }
-                case (5): // client sent us a file
-                {
-                    // TODO
-                    // odbierz pliczek
-                    // przeslij dalej
-                    break;
-                }
-                case (6): // client doesn't have that file anymore
-                {
-                    sendErrorToClient(socket, "No such file found.");
-                    break;
-                }
-                default: // bad header
-                {
-                    throw std::runtime_error("Unknown header!");
+                    case (5): // client sent us a file
+                    {
+                        // TODO
+                        // odbierz pliczek i KONIECZNIE zapisz pod brokerSharedDirectory + filename
+                        // przeslij dalej
+                        break;
+                    }
+                    case (6): // client doesn't have that file anymore
+                    {
+                        sendErrorToClient(socket, "No such file found.");
+                        break;
+                    }
+                    default: // bad header
+                    {
+                        throw std::runtime_error("Unknown header!");
+                    }
                 }
             }
         }
-    } while(true);
-    //} while (client_hashcode != 0);
-    //TO DO
-    std::cout << "Didn't receive hashcode - client probably dead" << std::endl;
-    close(socket);
-    delete socketWrapper;
+    }
+        while (true);
+
+        //TO DO
+        std::cout << "Didn't receive hashcode - client probably dead" << std::endl;
+        close(socket);
+        delete socketWrapper;
+}
+
+bool Broker::checkFile(const std::string& name)
+{
+    return (access(name.c_str(), F_OK) != -1);
 }
 
 std::pair<message_header*,char*> Broker::receiveMessage(int socket)
