@@ -8,12 +8,13 @@
 #include "inc.h"
 #include <Message.h>
 #include <map>
+#include <unordered_map>
 
 class Broker {
 private:
     static Broker* instancePtr;
     std::vector<pthread_t> threads;
-    static std::map<int,std::vector<std::string>> clients;
+    static std::unordered_map<int,std::vector<std::string>> clients;
 
 public:
     void waitForClients();

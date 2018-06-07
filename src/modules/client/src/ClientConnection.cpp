@@ -80,12 +80,12 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     break;
                 }
                 case 3: {
-
                     int nrOfFiles = header->size / 40;
-                    for (int i = 0; i <= nrOfFiles; i++) {
+                    std::cout << "Otrzymano pliki od brokera." << std::endl;
+                    for (int i = 0; i < nrOfFiles; i++) {
                         char filename[40] = {0};
-                        memcpy(filename, buf + 8 + 40 * i, sizeof(filename));
-                        std::cout << fileName << std::endl;
+                        strncpy(filename, buf + sizeof(message_header) + fileNameMaxLength * i, sizeof(filename));
+                        std::cout << std::string(filename) << std::endl;
                     }
 
                     break;
