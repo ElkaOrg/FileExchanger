@@ -112,6 +112,7 @@ void *Broker::handleClient(void *ptr) {
         if (message.first) {
             std::cout << "Got message with header type: " << message.first->type;
             std::cout << " from client with ID: " << socket << std::endl;
+            std::cout << " message length" << message.first->size << std::endl;
             switch (message.first->type) {
                 case (0): // ehlo
                 {
@@ -123,9 +124,9 @@ void *Broker::handleClient(void *ptr) {
                     int nrOfFiles = message.first->size / 40; // ??? na pewno dobrze ???
                     std::cout << "Client with ID: " << socket << " files: " << std::endl;
                     for (int i = 0; i < nrOfFiles; i++) {
-                        char filename[40];
+                        char filename[40] = {0};
                         memset(filename, 0x00, sizeof(filename));
-                        memcpy(filename, message.second + 8 + 40 * i, sizeof(filename));
+                        strncpy(filename, message.second + 8 + 40 * i, sizeof(filename));
                         filenames.push_back(FileTransfer::parseFileName(filename, sizeof(filename)));
                         std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
                     }
@@ -254,6 +255,18 @@ std::pair<message_header *, char *> Broker::receiveMessage(int socket) {
 
     //TEST
     std::cout << header->type << std::endl;
+
+    if(header->type == 1){
+        int nrOfFiles = header->size / 40; // ??? na pewno dobrze ???
+        std::cout << "Client with ID: " << socket << " files: " << std::endl;
+        for (int i = 0; i < nrOfFiles; i++) {
+            char filename[40] = {0};
+            memset(filename, 0x00, sizeof(filename));
+            strncpy(filename, buff + 8 + 40 * i, sizeof(filename));
+            std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
+        }
+        std::cout << std::endl;
+    }
 
     return std::make_pair(header, buff);
 }
