@@ -243,22 +243,22 @@ bool Broker::checkFile(const std::string &name) {
 message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
     memset(buff, 0, bufSize); // clean buffer
     char typeAndSize[8] = {0};
-    message_header* header;
+    message_header header;
 
     auto bytesRead = read(socket, buff, bufSize);
     if (bytesRead == 0)
     {
-        header->type = 8;
-        header->size = 0;
+        header.type = 8;
+        header.size = 0;
     }
     else {
         memcpy(typeAndSize, buff, sizeof(typeAndSize));
-        header = (struct message_header *) typeAndSize;
-        header->type = ntohl(header->type);
-        header->size = ntohl(header->size);
+        header = (struct message_header &) typeAndSize;
+        header.type = ntohl(header.type);
+        header.size = ntohl(header.size);
     }
 
-    return *header;
+    return header;
 }
 
 void Broker::waitForClients() {
