@@ -150,15 +150,20 @@ void *Broker::handleClient(void *ptr) {
                 message_header msg;
                 msg.type = htonl(3);
 
+                std::vector<std::string> filenamesToSend;
+                for (auto const &client : clients) // loop through all clients
+                {
+                    filenamesToSend.insert(filenamesToSend.end(), client.second.begin(), client.second.end());
+                }
 
-                msg.size = htonl(fileNameMaxLength * clients[socket].size());
-                size_t size = sizeof(msg) + fileNameMaxLength * clients[socket].size();
+                msg.size = htonl(fileNameMaxLength * filenamesToSend.size());
+                size_t size = sizeof(msg) + fileNameMaxLength * filenamesToSend.size();
                 auto buffer = new char[size];
                 memset(buffer, 0x00, size);
                 memcpy(buffer, &msg, sizeof(msg));
 
                 int i = 0;
-                for (auto const &name : clients[socket]) {
+                for (auto const &name : filenamesToSend) {
                     memcpy(buffer + sizeof(msg) + fileNameMaxLength * i, name.c_str(), name.length());
                     i++;
                 }
