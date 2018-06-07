@@ -216,6 +216,11 @@ void *Broker::handleClient(void *ptr) {
                 sendErrorToClient(socket, "No such file found.");
                 break;
             }
+            case (8): // client disconnected
+            {
+                std::cout << "Client with ID: " << socket << " disconnected." << std::endl;
+                pthread_exit(NULL);
+            }
             default: // bad header
             {
                 throw std::runtime_error("Unknown header!");
@@ -238,12 +243,20 @@ bool Broker::checkFile(const std::string &name) {
 message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
     memset(buff, 0, bufSize); // clean buffer
     char typeAndSize[8] = {0};
+    message_header* header;
 
     auto bytesRead = read(socket, buff, bufSize);
-    memcpy(typeAndSize, buff, sizeof(typeAndSize));
-    auto header = (struct message_header *) typeAndSize;
-    header->type = ntohl(header->type);
-    header->size = ntohl(header->size);
+    if (bytesRead == 0)
+    {
+        header->type = 8;
+        header->size = 0;
+    }
+    else {
+        memcpy(typeAndSize, buff, sizeof(typeAndSize));
+        header = (struct message_header *) typeAndSize;
+        header->type = ntohl(header->type);
+        header->size = ntohl(header->size);
+    }
 
     return *header;
 }
