@@ -125,6 +125,11 @@ void *ClientConnection::recvThreadFunction(void *object) {
 
                     break;
                 }
+                case 8: case 9: {
+                    std::string folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
+                    FileTransfer::recvOneFile(folderPath, buf, sizeof(buf));
+                    break;
+                }
                 default:
                     throw std::runtime_error("Unknown header");
             }
@@ -294,72 +299,10 @@ bool ClientConnection::sayDontHaveFile(const std::string &fileName) {
 }
 
 bool ClientConnection::sendFile(const std::string &filePath, const std::string &fileName) {
+    FileTransfer::sendOneFile(socketId, filePath, fileName);
 
-    const int maxTxtBuffer = 1024; // how many data can be readed from file
-
-    FILE *fp = fopen(filePath.c_str(), "rb");
-    if (fp == NULL) {
-        printf("File open error");
-        return 1;
-    }
-    //get size of file
-    fseek(fp, 0, SEEK_END);
-    int fileSize = ftell(fp);
-    fseek(fp, 0, 0);
-
-    message_header msg;
-    msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
-    msg.type = htonl(8);
-
-    //set max msg buffer
-
-
-    size_t size = sizeof(msg) + msg.size;
-    char *buffer;
-    size_t bufferSize = 0;
-
-    if (size > fileNameMaxLength + sizeof(msg) + maxTxtBuffer) { //divide files
-        msg.size = htonl(fileNameMaxLength + maxTxtBuffer);
-        bufferSize = maxTxtBuffer + sizeof(msg) + fileNameMaxLength;
-        buffer = new char[bufferSize];
-    } else {
-        buffer = new char[size]; // all fits
-        bufferSize = size;
-    }
-    memset(buffer, 0x00, bufferSize);
-
-    memcpy(buffer, &msg, sizeof(msg));//first read
-    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
-
-    size_t nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp);
-    fileSize -= nread;
-    write(socketId, buffer, bufferSize);
-    while (fileSize > 0) {
-        memset(buffer, 0x00, bufferSize); // clean buffer
-        if (fileSize + fileNameMaxLength + sizeof(msg) < bufferSize) {
-            // if fileSize fits to buffer
-            msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
-        } else {
-            msg.size = htonl(fileNameMaxLength + maxTxtBuffer); //default, we assume that size fit to maxTextBuffer
-        }
-        msg.type = htonl(9); // 9 - continue sending file
-
-        memcpy(buffer, &msg, sizeof(msg));
-        memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
-        nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp); // read again
-        fileSize -= nread;
-        /* If read was success, send data. */
-        if (nread > 0) {
-            //printf("Sending \n");
-            write(socketId, buffer, bufferSize);
-        }
-    }
-
-    fclose(fp);//TODO error check
-    delete[] buffer;
-
-    return true;
 }
+
 
 ClientConnection::ClientConnection(std::shared_ptr<DataBase> &clientDb) : clientDb(clientDb) {
 

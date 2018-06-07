@@ -6,19 +6,18 @@
 #define FILEEXCHANGER_FILETRANSFER_H
 
 #include "../../../include/inc.h"
+#include <string>
+#include <Message.h>
 
-#define BUF_SIZE 1024
 
 class FileTransfer
 {
 private:
-    int socketDescriptor;
 
 public:
-    FileTransfer(int socketDescriptor);
 
-    int sendOneFile(char* filePath);
-    int receiveOneFile(char* filePath);
+    static int sendOneFile(int socketId, const std::string &filePath, const std::string &fileName);
+    static int recvOneFile(const std::string & folderPath, char * buf, int bufN);
 };
 
 #endif //FILEEXCHANGER_FILETRANSFER_H
