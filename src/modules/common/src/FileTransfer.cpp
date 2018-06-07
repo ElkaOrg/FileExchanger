@@ -4,89 +4,89 @@
 
 #include "../include/FileTransfer.h"
 
-FileTransfer::FileTransfer(int socketDescriptor): socketDescriptor(socketDescriptor) {}
-
-int FileTransfer::sendOneFile(char *filePath)
+int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const std::string &fileName)
 {
-    //send file name first
-    write(socketDescriptor, filePath,256);
+    const int maxTxtBuffer = 1024; // how many data can be readed from file
 
-    FILE *fp = fopen(filePath,"rb");
-    if(fp == NULL)
-    {
+    FILE *fp = fopen(filePath.c_str(), "rb");
+    if (fp == NULL) {
         printf("File open error");
         return 1;
     }
+    //get size of file
+    fseek(fp, 0, SEEK_END);
+    int fileSize = ftell(fp);
+    fseek(fp, 0, 0);
 
-    while(1)
-    {
-        unsigned char buff[1024]={0};
-        int nread = fread(buff,1,1024,fp);
+    message_header msg;
+    msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
+    msg.type = htonl(8);
 
+    //set max msg buffer
+
+
+    size_t size = sizeof(msg) + msg.size;
+    char *buffer;
+    size_t bufferSize = 0;
+
+    if (size > fileNameMaxLength + sizeof(msg) + maxTxtBuffer) { //divide files
+        msg.size = htonl(fileNameMaxLength + maxTxtBuffer);
+        bufferSize = maxTxtBuffer + sizeof(msg) + fileNameMaxLength;
+        buffer = new char[bufferSize];
+    } else {
+        buffer = new char[size]; // all fits
+        bufferSize = size;
+    }
+    memset(buffer, 0x00, bufferSize);
+
+    memcpy(buffer, &msg, sizeof(msg));//first read
+    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+
+    size_t nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp);
+    fileSize -= nread;
+    write(socketId, buffer, bufferSize);
+    while (fileSize > 0) {
+        memset(buffer, 0x00, bufferSize); // clean buffer
+        if (fileSize + fileNameMaxLength + sizeof(msg) < bufferSize) {
+            // if fileSize fits to buffer
+            msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
+        } else {
+            msg.size = htonl(fileNameMaxLength + maxTxtBuffer); //default, we assume that size fit to maxTextBuffer
+        }
+        msg.type = htonl(9); // 9 - continue sending file
+
+        memcpy(buffer, &msg, sizeof(msg));
+        memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+        nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp); // read again
+        fileSize -= nread;
         /* If read was success, send data. */
-        if(nread > 0)
-        {
+        if (nread > 0) {
             //printf("Sending \n");
-            write(socketDescriptor, buff, nread);
+            write(socketId, buffer, bufferSize);
         }
-        if (nread < 1024)
-        {
-            if (feof(fp))
-            {
-                printf("End of file\n");
-                printf("File transfer completed for id: %d\n",socketDescriptor);
-                fclose(fp);
-            }
-            if (ferror(fp))
-                printf("Error reading\n");
-            break;
-        }
-    }//while
+    }
 
-    return 0;
+    fclose(fp);//TODO error check
+    delete[] buffer;
+
+    return true;
 }
 
-int FileTransfer::receiveOneFile(char* filePath)
-{
-    int bytesReceived = 0;
-    char recvBuff[1024];
-    memset(recvBuff, '0', sizeof(recvBuff));
+int FileTransfer::recvOneFile(const std::string & folderPath, char *buf, int bufN) {
+    char typeAndSize[8] = {0};
+    memcpy(typeAndSize, buf, sizeof(typeAndSize));
+    auto *header = (struct message_header *) typeAndSize;
+    header->type = ntohl(header->type);
+    header->size = ntohl(header->size);
 
-    /* Create file where data will be stored */
-    FILE *fp;
-    char fname[100];
-    read(socketDescriptor, fname, 256);
+    char fileName[40] = {0};
+    memcpy(fileName, buf+8, 40); //copy file name
 
-    strcpy(filePath, fname);
+    std::string fileNameString = std::string(fileName); //auto removes 0
 
-    //fp = fopen(fname, "wb");
-    fp = fopen("/home/gnowacki/BROKER_FILE", "wb");  //TODO uncomment
-    if(fp == NULL)
-    {
-        printf("Error opening file");
-        return 1;
-    }
-
-    long double sz = 1;
-
-    /* Receive data in chunks of 256 bytes */
-    while((bytesReceived = read(socketDescriptor, recvBuff, 1024)) > 0)
-    {
-        sz++;
-        printf("Received: %llf Mb",(sz/1024));
-        fflush(stdout);
-        // recvBuff[n] = 0;
-        fwrite(recvBuff, 1,bytesReceived,fp);
-        // printf("%s \n", recvBuff);
-    }
-
-    if(bytesReceived < 0)
-    {
-        printf("\n Read Error \n");
-    }
-    printf("\nFile OK....Completed\n");
-
-    fclose(fp);
-
+    std::fstream file;
+    file.open(folderPath+"/"+fileName, std::ios::out);
+    file.write(buf+8+40, header->size-40);
+    file.close();
     return 0;
 }
