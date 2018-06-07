@@ -27,7 +27,6 @@ public:
 
 private:
     static void* handleClient(void* msgsock);
-    static std::pair<message_header*,char*> receiveMessage(int socket);
     static void sendRequest(int socketId, uint32_t requestType);
     static int checkFilename(std::string filename);
     static void sendErrorToClient(int socket, std::string message);
@@ -37,6 +36,8 @@ private:
 
     /* Private constructor to prevent instancing. */
     Broker();
+
+    static message_header receiveMessage(char *buff, int bufSize, int socket);
 };
 
 
