@@ -207,7 +207,7 @@ void *Broker::handleClient(void *ptr) {
 
                         // TODO
                         // wyslij pliczek spod brokerSharedDirectory + filename
-
+                    }
                         break;
                     }
                 }
