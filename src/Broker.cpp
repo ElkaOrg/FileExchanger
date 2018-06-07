@@ -88,10 +88,11 @@ void *Broker::handleClient(void *ptr) {
     std::vector<std::string> filenames;
     std::size_t client_hashcode = 0;
 
-    auto ehlo = receiveMessage(socket);
-    auto header = ehlo.first;
+    char buff[512];
 
-    if (header->type != 0) {
+    auto header = receiveMessage(buff, sizeof(buff), socket);
+
+    if (header.type != 0) {
         throw std::runtime_error("Didn't receive ehlo!");
     } else {
         std::cout << "Got ehlo from client with ID: " << socket << std::endl;
@@ -243,32 +244,17 @@ bool Broker::checkFile(const std::string &name) {
     return (access(name.c_str(), F_OK) != -1);
 }
 
-std::pair<message_header *, char *> Broker::receiveMessage(int socket) {
-    char buff[512] = {0};
+message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
+    memset(buff, 0, bufSize); // clean buffer
     char typeAndSize[8] = {0};
 
-    auto bytesRead = read(socket, buff, sizeof(buff));
+    auto bytesRead = read(socket, buff, bufSize);
     memcpy(typeAndSize, buff, sizeof(typeAndSize));
-    auto *header = (struct message_header *) typeAndSize;
+    auto header = (struct message_header *) typeAndSize;
     header->type = ntohl(header->type);
     header->size = ntohl(header->size);
 
-    //TEST
-    std::cout << header->type << std::endl;
-
-    if(header->type == 1){
-        int nrOfFiles = header->size / 40; // ??? na pewno dobrze ???
-        std::cout << "Client with ID: " << socket << " files: " << std::endl;
-        for (int i = 0; i < nrOfFiles; i++) {
-            char filename[40] = {0};
-            memset(filename, 0x00, sizeof(filename));
-            strncpy(filename, buff + 8 + 40 * i, sizeof(filename));
-            std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
-    return std::make_pair(header, buff);
+    return *header;
 }
 
 void Broker::waitForClients() {
