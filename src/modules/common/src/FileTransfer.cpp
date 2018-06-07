@@ -90,3 +90,11 @@ int FileTransfer::recvOneFile(const std::string & folderPath, char *buf, int buf
     file.close();
     return 0;
 }
+
+std::string FileTransfer::parseFileName(const char *fileName, int n) {
+    std::string result;
+    for(int i = 0; i < n && fileName[i] != 0; i++){
+        result += fileName[i];
+    }
+    return result;
+}

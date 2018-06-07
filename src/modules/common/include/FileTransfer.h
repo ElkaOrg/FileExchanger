@@ -18,6 +18,8 @@ public:
 
     static int sendOneFile(int socketId, const std::string &filePath, const std::string &fileName);
     static int recvOneFile(const std::string & folderPath, char * buf, int bufN);
+
+    static std::string parseFileName(const char * fileName, int n);
 };
 
 #endif //FILEEXCHANGER_FILETRANSFER_H

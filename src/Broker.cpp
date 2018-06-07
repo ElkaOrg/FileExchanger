@@ -126,8 +126,8 @@ void *Broker::handleClient(void *ptr) {
                         char filename[40];
                         memset(filename, 0x00, sizeof(filename));
                         memcpy(filename, message.second + 8 + 40 * i, sizeof(filename));
-                        filenames.push_back(std::string(filename));
-                        std::cout << "----> " << std::string(filename) << std::endl;
+                        filenames.push_back(FileTransfer::parseFileName(filename, sizeof(filename)));
+                        std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
                     }
                     std::cout << std::endl;
                     clients[socket] = filenames;
