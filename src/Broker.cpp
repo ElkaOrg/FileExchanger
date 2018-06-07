@@ -96,8 +96,6 @@ void *Broker::handleClient(void *ptr) {
         throw std::runtime_error("Didn't receive ehlo!");
     } else {
         std::cout << "Got ehlo from client with ID: " << socket << std::endl;
-        sendRequest(socket, 1); //filenames request
-        sleep(1);
         sendRequest(socket, 2); //hashcode request
     }
 
