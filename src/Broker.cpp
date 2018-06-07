@@ -216,7 +216,7 @@ void *Broker::handleClient(void *ptr) {
                 sendErrorToClient(socket, "No such file found.");
                 break;
             }
-            case (8): // client disconnected
+            case (99): // client disconnected
             {
                 std::cout << "Client with ID: " << socket << " disconnected." << std::endl;
                 pthread_exit(NULL);
@@ -248,7 +248,7 @@ message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
     auto bytesRead = read(socket, buff, bufSize);
     if (bytesRead == 0)
     {
-        header.type = 8;
+        header.type = 99;
         header.size = 0;
     }
     else {
