@@ -8,7 +8,7 @@
 
 /* Null, because instance will be initialized on demand. */
 Broker *Broker::instancePtr = 0;
-std::map<int, std::vector<std::string>> Broker::clients;
+std::unordered_map<int, std::vector<std::string>> Broker::clients;
 
 Broker *Broker::getInstance() {
     if (instancePtr == 0) {
@@ -85,7 +85,6 @@ void *Broker::handleClient(void *ptr) {
     int socket = socketWrapper->getSocket();
     auto now = std::chrono::system_clock::now();
 
-    std::vector<std::string> filenames;
     std::size_t client_hashcode = 0;
 
     char buff[512];
@@ -118,18 +117,18 @@ void *Broker::handleClient(void *ptr) {
             }
             case (1): // client sent us his filenames
             {
+                clients[socket].clear();
+
                 int nrOfFiles = message.size / 40; // ??? na pewno dobrze ???
                 std::cout << "Client with ID: " << socket << " files: " << std::endl;
                 for (int i = 0; i < nrOfFiles; i++) {
-                    filenames.clear();
                     char filename[40] = {0};
                     memset(filename, 0x00, sizeof(filename));
                     strncpy(filename, buff + 8 + 40 * i, sizeof(filename));
-                    filenames.emplace_back(FileTransfer::parseFileName(filename, sizeof(filename)));
+                    clients[socket].push_back(FileTransfer::parseFileName(filename, sizeof(filename)));
                     std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
                 }
                 std::cout << std::endl;
-                clients[socket] = filenames;
                 break;
             }
             case (2): // client sent us hashcode
@@ -151,23 +150,15 @@ void *Broker::handleClient(void *ptr) {
                 message_header msg;
                 msg.type = htonl(3);
 
-                std::vector<std::string> filenamesToSend;
-                for (auto const &client : clients) // loop through all clients
-                {
-                    for (auto const &filename : client.second) // loop through client files
-                    {
-                        filenamesToSend.emplace_back(filename);
-                    }
-                }
 
-                msg.size = htonl(fileNameMaxLength * filenamesToSend.size());
-                size_t size = sizeof(msg) + fileNameMaxLength * filenamesToSend.size();
+                msg.size = htonl(fileNameMaxLength * clients[socket].size());
+                size_t size = sizeof(msg) + fileNameMaxLength * clients[socket].size();
                 auto buffer = new char[size];
                 memset(buffer, 0x00, size);
                 memcpy(buffer, &msg, sizeof(msg));
 
                 int i = 0;
-                for (auto const &name : filenamesToSend) {
+                for (auto const &name : clients[socket]) {
                     memcpy(buffer + sizeof(msg) + fileNameMaxLength * i, name.c_str(), name.length());
                     i++;
                 }
