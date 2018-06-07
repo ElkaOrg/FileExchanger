@@ -121,10 +121,11 @@ void *Broker::handleClient(void *ptr) {
                 int nrOfFiles = message.size / 40; // ??? na pewno dobrze ???
                 std::cout << "Client with ID: " << socket << " files: " << std::endl;
                 for (int i = 0; i < nrOfFiles; i++) {
+                    filenames.clear();
                     char filename[40] = {0};
                     memset(filename, 0x00, sizeof(filename));
                     strncpy(filename, buff + 8 + 40 * i, sizeof(filename));
-                    filenames.push_back(FileTransfer::parseFileName(filename, sizeof(filename)));
+                    filenames.emplace_back(FileTransfer::parseFileName(filename, sizeof(filename)));
                     std::cout << "----> " << FileTransfer::parseFileName(filename, sizeof(filename)) << std::endl;
                 }
                 std::cout << std::endl;
@@ -155,8 +156,7 @@ void *Broker::handleClient(void *ptr) {
                 {
                     for (auto const &filename : client.second) // loop through client files
                     {
-                        auto it = filenames.end();
-                        filenames.insert(it, filename);
+                        filenames.emplace_back(filename);
                     }
                 }
 
