@@ -215,17 +215,17 @@ void* Broker::handleClient(void* ptr)
                             std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                         } else {
                             //pobierz pliczek
-                            while (!checkFile(brokerSharedDirectory + filename))
-                            {
+                            while (!checkFile(brokerSharedDirectory + filename)) {
                                 sleep(1);
                             }
                         }
 
                         // TODO
                         // wyslij pliczek spod brokerSharedDirectory + filename
-
+                    }
                         break;
                     }
+
                     case (5): // client sent us a file
                     {
                         // TODO
@@ -244,7 +244,6 @@ void* Broker::handleClient(void* ptr)
                     }
                 }
             }
-        }
     }
         while (true);
 
