@@ -156,7 +156,7 @@ void *Broker::handleClient(void *ptr) {
                 {
                     for (auto const &filename : client.second) // loop through client files
                     {
-                        filenames.emplace_back(filename);
+                        filenamesToSend.emplace_back(filename);
                     }
                 }
 
