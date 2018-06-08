@@ -182,38 +182,38 @@ void *Broker::handleClient(void *ptr) {
                 memset(filename, 0x00, sizeof(filename));
                 memcpy(filename, buff + 8, sizeof(filename));
 
-                int socketId = checkFilename(filename);
-                if (socketId == -1) {
+                int fileOwnerId = checkFilename(filename);
+                if (fileOwnerId == -1) {
                     std::cout << "Filename " << filename << "is not avaliable" << std::endl;
                     sendErrorToClient(socket, "No such file found.");
                 } else {
                     std::cout << "Filename " << filename << "found in files of client with ID: " << socket
                               << std::endl;
-
                     if (checkFile(brokerSharedDirectory + filename)) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                     } else {
-                        //pobierz pliczek
+                        sendRequestForFile(fileOwnerId, filename);
                         while (!checkFile(brokerSharedDirectory + filename)) {
                             sleep(1);
                         }
+                        FileTransfer::sendOneFile(socket, brokerSharedDirectory, filename);
                     }
-
-                    // TODO
-                    // wyslij pliczek spod brokerSharedDirectory + filename
                 }
                 break;
             }
-            case (5): // client sent us a file
-            {
-                // TODO
-                // odbierz pliczek i KONIECZNIE zapisz pod brokerSharedDirectory + filename
-                // przeslij dalej
-                break;
-            }
-            case (6): // client doesn't have that file anymore
+            case (5): // client doesn't have that file anymore
             {
                 sendErrorToClient(socket, "No such file found.");
+                break;
+            }
+            case (6): // client sent us a file
+            {
+                FileTransfer::recvOneFile(brokerSharedDirectory, buff, 512);
+                break;
+            }
+            case (7): // client sent us a file AGAIN
+            {
+                FileTransfer::recvOneFile(brokerSharedDirectory, buff, 512);
                 break;
             }
             case (99): // client disconnected
@@ -227,13 +227,11 @@ void *Broker::handleClient(void *ptr) {
             }
         }
     } while (true);
+}
 
-//TO DO
-    std::cout << "Didn't receive hashcode - client probably dead" <<
-              std::endl;
-    close(socket);
-    delete
-            socketWrapper;
+void Broker::sendRequestForFile(int socketId, char* filename)
+{
+
 }
 
 bool Broker::checkFile(const std::string &name) {
