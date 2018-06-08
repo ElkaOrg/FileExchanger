@@ -50,16 +50,16 @@ void *ClientConnection::recvThreadFunction(void *object) {
             header->type = ntohl(header->type);
             header->size = ntohl(header->size);
 
-            std::string folderPath = "";
+            std::string folderPath;
             char fileName[40];
 
             std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
 
             switch (header->type) {
-                case 0: {
+                case 0: { // ehlo to client not supported
                     break;
                 }
-                case 1: {
+                case 1: { // broker want file names
                     folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
                     if (folderPath.empty()) {
                         std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
@@ -69,7 +69,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     }
                     break;
                 }
-                case 2: {
+                case 2: { // broker want hashcode
                     folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
                     if (folderPath.empty()) {
                         std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
@@ -79,7 +79,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     }
                     break;
                 }
-                case 3: {
+                case 3: { //broker send file names to client
                     int nrOfFiles = header->size / 40;
                     std::cout << "Otrzymano pliki od brokera." << std::endl;
                     for (int i = 0; i < nrOfFiles; i++) {
@@ -90,7 +90,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
 
                     break;
                 }
-                case 4: {
+                case 4: { // broker want file from client
                     if (header->size != 40) {
                         throw std::runtime_error("Invalid file size");
                     }
@@ -106,7 +106,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     }
                     break;
                 }
-                case 5: {
+                case 5: { // broker tells that he dont have file
                     if (header->size != 40) {
                         throw std::runtime_error("Invalid file size");
                     }
@@ -115,8 +115,9 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     std::cout << "Nie ma takiego pliku!" << std::string(fileName) << std::endl;
                     break;
                 }
-                case 6: {
-                    if (header->size > 500) {
+                /*
+                case 6: { // broker send error, human readble
+                    if (header->size > 500) { //error , broker send
                         throw std::runtime_error("Tresc bledu jest za dluga!");
                     }
                     char errorMsg[header->size] = {0};
@@ -124,8 +125,8 @@ void *ClientConnection::recvThreadFunction(void *object) {
                     std::cout << "Broker Blad!: " << errorMsg << std::endl;
 
                     break;
-                }
-                case 8: case 9: {
+                }*/
+                case 6: case 7: {
                     std::string folderPath = connection->clientDb.get()->getKey(clientSharedFolderKey);
                     FileTransfer::recvOneFile(folderPath, buf, sizeof(buf));
                     break;
@@ -176,52 +177,6 @@ bool ClientConnection::sendEhlo() {
 
     write(socketId, buffer, size);
     delete[] buffer;
-
-    /*
-     * 1- klient
-    std::string folderPath = clientDb.get()->getKey(clientSharedFolderKey);
-     if(folderPath == ""){
-        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-     }
-     else {
-     DirManagment dirMgmt = DirManagment(folderPath);
-    sendFileNames(dirMgmt.getAllFileNames());
-     }
-     */
-
-    /*
-    2 - klient hashcode
-     */
-    /*std::string folderPath = clientDb.get()->getKey(clientSharedFolderKey);
-    if(folderPath == ""){
-        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-    }
-    else {
-        DirManagment dirMgmt = DirManagment(folderPath);
-        sendFilesHashCode(dirMgmt.calculateDirHash());
-    }
-    */
-
-    /*
-     * 3 - klient prosi o plik brokera
-
-
-    std::string requestFile = "abc.xyz";
-    requestForFile(requestFile);
-     */
-
-    /*
-    /**
-     * send file
-
-    std::string folderPath = clientDb.get()->getKey(clientSharedFolderKey);
-    if (folderPath == "") {
-        std::cout << "Brak wpisanej sciezki udostepnianego folderu!" << std::endl;
-    } else {
-        DirManagment dirMgmt = DirManagment(folderPath);
-        sendFile(folderPath + "f1");
-    }
-*/
     return true;
 }
 

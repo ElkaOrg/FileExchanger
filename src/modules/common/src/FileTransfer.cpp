@@ -20,7 +20,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
 
     message_header msg;
     msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
-    msg.type = htonl(8);
+    msg.type = htonl(6);
 
     //set max msg buffer
 
@@ -53,7 +53,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
         } else {
             msg.size = htonl(fileNameMaxLength + maxTxtBuffer); //default, we assume that size fit to maxTextBuffer
         }
-        msg.type = htonl(9); // 9 - continue sending file
+        msg.type = htonl(7); // 9 - continue sending file
 
         memcpy(buffer, &msg, sizeof(msg));
         memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
@@ -85,15 +85,14 @@ int FileTransfer::recvOneFile(const std::string& folderPath, char *buf, int bufN
     std::string fileNameString = std::string(fileName); //auto removes 0
 
     std::fstream file;
-    file.open(folderPath+"/"+"tmp_"+fileNameString, std::ios::out);
+    std::string oldName = folderPath+"/"+"_tmp_"+fileNameString;
+    file.open(oldName, std::ios::out);
     file.write(buf+8+40, header->size-40);
     file.close();
 
-    char oldname[(folderPath+"/"+"tmp_"+fileName).length()+1];
-    char newname[(folderPath+"/"+fileName).length()+1];
-    strncpy(oldname, folderPath+"/tmp_"+fileName, sizeof(oldname));
-    strncpy(newname, folderPath+"/"+fileName, sizeof(newname));
-    std::rename(oldname, newname);
+    std::string newName = folderPath+"/"+fileNameString;
+
+    std::rename(oldName.c_str(), newName.c_str());
     
     return 0;
 }
