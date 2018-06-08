@@ -17,6 +17,7 @@ void ClientMenu::showMainMenu() {
         std::cout << "2 - Client settings" << std::endl;
         std::cout << "3 - Download file" << std::endl;
 
+        std::cin.clear();
         std::cin >> chosenNumber;
 
         switch (chosenNumber) {
@@ -60,6 +61,7 @@ void ClientMenu::menuDownloadFile() {
                 return;
             }
             clientConnection.requestForFile(fileName);
+            std::cout << "Request for file was send" << std::endl;
             break;
         }
         case 0: default:

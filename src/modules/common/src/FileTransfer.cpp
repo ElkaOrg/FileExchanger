@@ -69,7 +69,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
     return true;
 }
 
-int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int bufN) {
+int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int length) {
     char typeAndSize[8] = {0};
     memcpy(typeAndSize, buf, sizeof(typeAndSize));
     auto *header = (struct message_header *) typeAndSize;

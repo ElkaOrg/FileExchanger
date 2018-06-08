@@ -224,7 +224,7 @@ bool ClientConnection::requestForFile(const std::string &fileName) {
     msg.type = htonl(4);
     msg.size = htonl(fileNameMaxLength);
 
-    size_t size = sizeof(msg) + msg.size;
+    size_t size = sizeof(msg) + fileNameMaxLength;
     auto buffer = new char[size];
     memset(buffer, 0x00, size);
 
