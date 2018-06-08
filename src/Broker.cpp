@@ -236,7 +236,7 @@ void Broker::sendRequestForFile(int socketId, std::string filename, char* buff)
     message_header msg;
     msg.type = htonl(4);
     msg.size = htonl(fileNameMaxLength);
-    size_t size = sizeof(msg) + msg.size;
+    size_t size = sizeof(msg) + fileNameMaxLength;
     memcpy(buff, &msg, sizeof(msg));
     memcpy(buff + sizeof(msg), filename.c_str(), filename.size());
     write(socketId, buff, size);
