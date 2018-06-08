@@ -221,7 +221,7 @@ bool ClientConnection::sendFilesHashCode(std::size_t hashCode) {
 
 bool ClientConnection::requestForFile(const std::string &fileName) {
     message_header msg;
-    msg.type = htonl(3);
+    msg.type = htonl(4);
     msg.size = htonl(fileNameMaxLength);
 
     size_t size = sizeof(msg) + msg.size;
