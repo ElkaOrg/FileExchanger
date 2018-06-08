@@ -11,7 +11,7 @@ typedef struct FileWait {
     int socketWho;
     std::string fileName;
 
-    FileWait(int socketWho, const std::string &fileName) : socketWho(socketWho), fileName(fileName) {}
+    FileWait(int socketWho, const std::string& fileName) : socketWho(socketWho), fileName(fileName) {}
 
     bool operator==(const FileWait& rhs) const
     {

@@ -1,5 +1,6 @@
 //
 // Created by gnowacki on 03.04.18.
+// Implementation by kamkulas.
 //
 
 #include "include/Broker.h"
@@ -255,7 +256,6 @@ void *Broker::handleClient(void *ptr) {
     pthread_exit(nullptr);
 }
 void Broker::checkFiles(std::vector<FileWait> & fileWaits){
-    std::cout << "Checking " << std::endl;
     for(auto & fileWait : fileWaits){
         if(checkFile(brokerSharedDirectory + fileWait.fileName)){
             FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory + fileWait.fileName, fileWait.fileName);
