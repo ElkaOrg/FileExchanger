@@ -256,8 +256,8 @@ void *Broker::handleClient(void *ptr) {
 void Broker::checkFiles(std::vector<FileWait> & fileWaits){
     std::cout << "Checking " << std::endl;
     for(auto & fileWait : fileWaits){
-        if(checkFile(brokerSharedDirectory + "/" + fileWait.fileName)){
-            FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory, fileWait.fileName);
+        if(checkFile(brokerSharedDirectory + fileWait.fileName)){
+            FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory + fileWait.fileName, fileWait.fileName);
             ///TO DO remove if ok
         }
     }

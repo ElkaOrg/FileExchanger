@@ -91,7 +91,7 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
     std::string fileNameString = parseFileName(fileName, sizeof(fileName)); //auto removes 0
 
     std::fstream file;
-    std::string oldName = folderPath + "/" + "_tmp_" + fileNameString;
+    std::string oldName = folderPath + "_tmp_" + fileNameString;
     file.open(oldName, std::ios::out | std::ios::ate | std::ios::binary);
     if(!file.good()){
         std::cout << "Failed when receiving, a file! Could not open file!";
@@ -100,7 +100,7 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
     file.write(buf + sizeof(message_header) + fileNameMaxLength, header->size - fileNameMaxLength);
     file.close();
 
-    std::string newName = folderPath + "/" + fileNameString;
+    std::string newName = folderPath + fileNameString;
 
     //rename only if file was send to the end
     if (header->type == 7) { // whole file was send
@@ -122,7 +122,7 @@ bool FileTransfer::sayDontHaveFile(int socketId, const std::string &fileName) {
     msg.type = htonl(5);
     msg.size = htonl(fileNameMaxLength);
 
-    size_t size = sizeof(msg) + msg.size;
+    size_t size = sizeof(msg) + fileNameMaxLength;
     auto buffer = new char[size];
     memset(buffer, 0x00, size);
 
