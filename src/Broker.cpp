@@ -103,6 +103,7 @@ void *Broker::handleClient(void *ptr) {
     }
 
     do {
+        bool end = false;
         auto timeTmp = std::chrono::system_clock::now();
         if (std::chrono::duration_cast<std::chrono::milliseconds>(now - timeTmp).count() >= 18000) {
             std::cout << "Sending hashcode request to client with ID: " << socket << std::endl;
@@ -113,6 +114,12 @@ void *Broker::handleClient(void *ptr) {
         auto message = receiveMessage(buff, sizeof(buff), socket, &readedBytes);
         std::cout << "Got message with header type: " << message.type;
         std::cout << " from client with ID: " << socket << std::endl;
+
+        if (message.type == 99)
+        {
+            end = true;
+        }
+
         switch (message.type) {
             case (0): // ehlo
             {
@@ -226,14 +233,24 @@ void *Broker::handleClient(void *ptr) {
             case (99): // client disconnected
             {
                 std::cout << "Client with ID: " << socket << " disconnected." << std::endl;
-                pthread_exit(NULL);
+                break;
             }
             default: // bad header
             {
                 throw std::runtime_error("Unknown header!");
             }
         }
+
+        if (end)
+        {
+            std::cout << "Thread for client with ID: " << socket << " ending." << std::endl;
+            break;
+        }
+
     } while (true);
+    close(socket);
+    delete socketWrapper;
+    pthread_exit(nullptr);
 }
 
 void Broker::sendRequestForFile(int socketId, std::string filename, char* buff)
