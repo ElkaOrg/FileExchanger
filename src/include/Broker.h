@@ -6,6 +6,7 @@
 #define FILEEXCHANGER_BROKER_H
 
 #include "inc.h"
+#include "FileWait.h"
 #include <Message.h>
 #include <map>
 #include <unordered_map>
@@ -15,7 +16,7 @@ private:
     static Broker* instancePtr;
     std::vector<pthread_t> threads;
     static std::unordered_map<int,std::vector<std::string>> clients;
-
+    static std::vector <FileWait> fileWaits;
 public:
     void waitForClients();
 
@@ -40,6 +41,8 @@ private:
     Broker();
 
     static message_header receiveMessage(char *buff, int bufSize, int socket, int * readedBytes);
+
+    void static checkFiles(std::vector<FileWait> &fileWaits);
 };
 
 

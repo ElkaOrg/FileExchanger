@@ -10,6 +10,8 @@
 /* Null, because instance will be initialized on demand. */
 Broker *Broker::instancePtr = 0;
 std::unordered_map<int, std::vector<std::string>> Broker::clients;
+std::vector<FileWait> Broker::fileWaits;
+
 
 Broker *Broker::getInstance() {
     if (instancePtr == 0) {
@@ -92,6 +94,7 @@ void *Broker::handleClient(void *ptr) {
 
     char buff[512];
     int readedBytes = 0;
+    std::vector<FileWait> fileWaits;
 
     auto header = receiveMessage(buff, sizeof(buff), socket, &readedBytes);
 
@@ -206,11 +209,7 @@ void *Broker::handleClient(void *ptr) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                     } else {
                         sendRequestForFile(fileOwnerId, filename, buff);
-                        /*while (!checkFile(brokerSharedDirectory + filename)) {
-                            sleep(1);
-                        }
-                        FileTransfer::sendOneFile(socket, brokerSharedDirectory, filename);
-                         */
+                        fileWaits.emplace_back(socket, brokerSharedDirectory + filename);
                     }
                 }
                 break;
@@ -247,10 +246,20 @@ void *Broker::handleClient(void *ptr) {
             break;
         }
 
+        checkFiles(fileWaits);
+
     } while (true);
     close(socket);
     delete socketWrapper;
     pthread_exit(nullptr);
+}
+void Broker::checkFiles(std::vector<FileWait> & fileWaits){
+    for(auto & fileWait : fileWaits){
+        if(checkFile(fileWait.fileName)){
+            FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory, fileWait.fileName);
+        }
+    }
+    fileWaits.clear();
 }
 
 void Broker::sendRequestForFile(int socketId, std::string filename, char* buff)

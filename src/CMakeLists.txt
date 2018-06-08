@@ -11,7 +11,7 @@ add_library(Modules modules/client/src/ClientMenu.cpp modules/client/include/Cli
 
 add_library (Program Broker.cpp include/Broker.h SocketWrapper.cpp include/SocketWrapper.h include/inc.h include/DataBase.h include/DirManagment.h)
 
-add_executable (Main main.cpp include/DataBase.h include/ConstVariables.h include/Message.h modules/client/include/ClientConnection.h)
+add_executable (Main main.cpp include/DataBase.h include/ConstVariables.h include/Message.h modules/client/include/ClientConnection.h include/FileWait.h)
 target_link_libraries (Main Program Modules pthread boost_system)
 
 add_executable(MainBroker MainBroker.cpp)
