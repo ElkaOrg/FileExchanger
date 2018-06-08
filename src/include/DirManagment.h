@@ -77,7 +77,9 @@ public:
     static bool isValidDirectory(const std::string &path) {
         return is_directory(path);
     }
-
+    static bool isValidFile(const std::string &path) {
+        return is_regular_file(path);
+    }
     ~DirManagment() {
     }
 

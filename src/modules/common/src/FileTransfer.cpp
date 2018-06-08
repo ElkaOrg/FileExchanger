@@ -2,77 +2,74 @@
 // Created by gnowacki on 07.05.18.
 //
 
+#include <DirManagment.h>
 #include "../include/FileTransfer.h"
 
-int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const std::string &fileName)
-{
+int calcReadBytes(int bufferSizeForFile, int fileSize){
+    if(bufferSizeForFile > fileSize){
+        return bufferSizeForFile;
+    }
+    return fileSize;
+}
+int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const std::string &fileName) {
     const int maxTxtBuffer = 1024; // how many data can be readed from file
 
-    FILE *fp = fopen(filePath.c_str(), "rb");
-    if (fp == NULL) {
-        printf("File open error");
+    if (!DirManagment::isValidFile(filePath)) {
+        sayDontHaveFile(socketId, fileName);
+    }
+
+    std::fstream file;
+    file.open(filePath.c_str(), std::ios::in | std::ios::binary);
+
+    if(!file.good()){
+        std::cout << "Opening error";
         return 1;
     }
     //get size of file
-    fseek(fp, 0, SEEK_END);
-    int fileSize = ftell(fp);
-    fseek(fp, 0, 0);
+    std::streampos fileSize = 0;
+    fileSize = file.tellg();
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg() - fileSize;
+    file.seekg(0, std::ios::beg); // go back to the beggining
+
 
     message_header msg;
-    msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
     msg.type = htonl(6);
 
-    //set max msg buffer
-
-
-    size_t size = sizeof(msg) + msg.size;
-    char *buffer;
-    size_t bufferSize = 0;
-
-    if (size > fileNameMaxLength + sizeof(msg) + maxTxtBuffer) { //divide files
-        msg.size = htonl(fileNameMaxLength + maxTxtBuffer);
-        bufferSize = maxTxtBuffer + sizeof(msg) + fileNameMaxLength;
-        buffer = new char[bufferSize];
+    if(fileNameMaxLength + fileSize < maxTxtBuffer){
+        msg.size = htonl(fileNameMaxLength + fileSize); // we assume that size fit to maxTextBuffer
     } else {
-        buffer = new char[size]; // all fits
-        bufferSize = size;
+        msg.size = htonl(maxTxtBuffer - sizeof(message_header)); //default, we assume that size fit to maxTextBuffer
     }
-    memset(buffer, 0x00, bufferSize);
+    char buffer[maxTxtBuffer];
+    int bufferSizeForFile = maxTxtBuffer - sizeof(message_header) - fileNameMaxLength;
 
-    memcpy(buffer, &msg, sizeof(msg));//first read
-    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+    memset(buffer, 0, maxTxtBuffer);
+    memcpy(buffer, &msg, sizeof(message_header)); // message header
+    memcpy(buffer+sizeof(message_header), fileName.c_str(), fileName.size()); // 40 bytes for filename
 
-    size_t nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp);
-    fileSize -= nread;
-    write(socketId, buffer, bufferSize);
-    while (fileSize > 0) {
-        memset(buffer, 0x00, bufferSize); // clean buffer
-        if (fileSize + fileNameMaxLength + sizeof(msg) < bufferSize) {
-            // if fileSize fits to buffer
-            msg.size = htonl(fileNameMaxLength + fileSize); //default, we assume that size fit to maxTextBuffer
-        } else {
-            msg.size = htonl(fileNameMaxLength + maxTxtBuffer); //default, we assume that size fit to maxTextBuffer
-        }
-        msg.type = htonl(7); // 9 - continue sending file
+    int readedBytes = calcReadBytes(bufferSizeForFile, fileSize);
 
-        memcpy(buffer, &msg, sizeof(msg));
-        memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
-        nread = fread(buffer + sizeof(msg) + fileNameMaxLength, 1, maxTxtBuffer, fp); // read again
-        fileSize -= nread;
-        /* If read was success, send data. */
-        if (nread > 0) {
-            //printf("Sending \n");
-            write(socketId, buffer, bufferSize);
-        }
+    file.read(buffer+sizeof(msg)+fileNameMaxLength, readedBytes);
+    fileSize -= readedBytes;
+    write(socketId, buffer, sizeof(buffer));
+
+    while(fileSize > 0){
+        // continue sending file
+        msg.type = htonl(7);
+        readedBytes = calcReadBytes(bufferSizeForFile, fileSize);
+        msg.size = htonl(readedBytes + fileNameMaxLength);
+
+        fileSize-= readedBytes;
+        write(socketId, buffer, sizeof(buffer));
+        sleep(1);
     }
-
-    fclose(fp);//TODO error check
-    delete[] buffer;
+    file.close();
 
     return true;
 }
 
-int FileTransfer::recvOneFile(const std::string& folderPath, char *buf, int bufN) {
+int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int bufN) {
     char typeAndSize[8] = {0};
     memcpy(typeAndSize, buf, sizeof(typeAndSize));
     auto *header = (struct message_header *) typeAndSize;
@@ -80,27 +77,44 @@ int FileTransfer::recvOneFile(const std::string& folderPath, char *buf, int bufN
     header->size = ntohl(header->size);
 
     char fileName[40] = {0};
-    memcpy(fileName, buf+8, 40); //copy file name
+    memcpy(fileName, buf + 8, 40); //copy file name
 
     std::string fileNameString = std::string(fileName); //auto removes 0
 
     std::fstream file;
-    std::string oldName = folderPath+"/"+"_tmp_"+fileNameString;
-    file.open(oldName, std::ios::out);
-    file.write(buf+8+40, header->size-40);
+    std::string oldName = folderPath + "/" + "_tmp_" + fileNameString;
+    file.open(oldName, std::ios::out | std::ios::ate | std::ios::binary);
+    file.write(buf + 8 + 40, header->size - 40);
     file.close();
 
-    std::string newName = folderPath+"/"+fileNameString;
+    std::string newName = folderPath + "/" + fileNameString;
 
     std::rename(oldName.c_str(), newName.c_str());
-    
+
     return 0;
 }
 
 std::string FileTransfer::parseFileName(const char *fileName, int n) {
     std::string result;
-    for(int i = 0; i < n && fileName[i] != 0; i++){
+    for (int i = 0; i < n && fileName[i] != 0; i++) {
         result += fileName[i];
     }
     return result;
+}
+
+bool FileTransfer::sayDontHaveFile(int socketId, const std::string &fileName) {
+    message_header msg;
+    msg.type = htonl(5);
+    msg.size = htonl(fileNameMaxLength);
+
+    size_t size = sizeof(msg) + msg.size;
+    auto buffer = new char[size];
+    memset(buffer, 0x00, size);
+
+    memcpy(buffer, &msg, sizeof(msg));
+    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
+    write(socketId, buffer, size);
+    delete[] buffer;
+
+    return true;
 }

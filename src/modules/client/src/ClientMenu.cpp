@@ -34,8 +34,6 @@ void ClientMenu::showMainMenu() {
 
             case 3:
                 menuDownloadFile();
-                //FileTransfer fileTransfer(socketDescriptor);
-                //fileTransfer.sendOneFile(filePath);
                 break;
             default:
                 std::cout << "Error has occured" << std::endl;
