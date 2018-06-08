@@ -32,8 +32,6 @@ public:
 
     bool requestForFile(const std::string &fileName);
 
-    bool sayDontHaveFile(const std::string &fileName);
-
     bool sendFile(const std::string &filePath, const std::string &fileNam);
 
     void startRecv();
