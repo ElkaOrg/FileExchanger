@@ -72,7 +72,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
     return true;
 }
 
-int FileTransfer::recvOneFile(const std::string & folderPath, char *buf, int bufN) {
+int FileTransfer::recvOneFile(const std::string& folderPath, char *buf, int bufN) {
     char typeAndSize[8] = {0};
     memcpy(typeAndSize, buf, sizeof(typeAndSize));
     auto *header = (struct message_header *) typeAndSize;
@@ -85,9 +85,16 @@ int FileTransfer::recvOneFile(const std::string & folderPath, char *buf, int buf
     std::string fileNameString = std::string(fileName); //auto removes 0
 
     std::fstream file;
-    file.open(folderPath+"/"+fileName, std::ios::out);
+    file.open(folderPath+"/"+"tmp_"+fileNameString, std::ios::out);
     file.write(buf+8+40, header->size-40);
     file.close();
+
+    char oldname[(folderPath+"/"+"tmp_"+fileName).length()+1];
+    char newname[(folderPath+"/"+fileName).length()+1];
+    strncpy(oldname, folderPath+"/tmp_"+fileName, sizeof(oldname));
+    strncpy(newname, folderPath+"/"+fileName, sizeof(newname));
+    std::rename(oldname, newname);
+    
     return 0;
 }
 
