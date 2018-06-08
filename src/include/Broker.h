@@ -32,6 +32,7 @@ private:
     static int checkFilename(std::string filename);
     static void sendErrorToClient(int socket, std::string message);
     static bool checkFile(const std::string& name);
+    static void sendRequestForFile(int socket, char* filename);
 
     void terminate();
 
