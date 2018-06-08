@@ -77,14 +77,14 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
     header->size = ntohl(header->size);
 
     char fileName[40] = {0};
-    memcpy(fileName, buf + 8, 40); //copy file name
+    memcpy(fileName, buf + sizeof(message_header), fileNameMaxLength); //copy file name
 
-    std::string fileNameString = std::string(fileName); //auto removes 0
+    std::string fileNameString = parseFileName(fileName, sizeof(fileName)); //auto removes 0
 
     std::fstream file;
     std::string oldName = folderPath + "/" + "_tmp_" + fileNameString;
     file.open(oldName, std::ios::out | std::ios::ate | std::ios::binary);
-    file.write(buf + 8 + 40, header->size - 40);
+    file.write(buf + sizeof(message_header) + fileNameMaxLength, header->size - fileNameMaxLength);
     file.close();
 
     std::string newName = folderPath + "/" + fileNameString;
