@@ -5,6 +5,7 @@
 #include "include/Broker.h"
 #include <Message.h>
 #include <chrono>
+#include <boost/filesystem.hpp>
 
 /* Null, because instance will be initialized on demand. */
 Broker *Broker::instancePtr = 0;
@@ -18,7 +19,9 @@ Broker *Broker::getInstance() {
     return instancePtr;
 }
 
-Broker::Broker() {}
+Broker::Broker() {
+    boost::filesystem::create_directory(brokerSharedDirectory);
+}
 
 Broker::~Broker() {
     delete instancePtr;
@@ -88,8 +91,9 @@ void *Broker::handleClient(void *ptr) {
     std::size_t client_hashcode = 0;
 
     char buff[512];
+    int readedBytes = 0;
 
-    auto header = receiveMessage(buff, sizeof(buff), socket);
+    auto header = receiveMessage(buff, sizeof(buff), socket, &readedBytes);
 
     if (header.type != 0) {
         throw std::runtime_error("Didn't receive ehlo!");
@@ -106,14 +110,16 @@ void *Broker::handleClient(void *ptr) {
             sendRequest(socket, 2);
         }
 
-        auto message = receiveMessage(buff, sizeof(buff), socket);
+        auto message = receiveMessage(buff, sizeof(buff), socket, &readedBytes);
         std::cout << "Got message with header type: " << message.type;
         std::cout << " from client with ID: " << socket << std::endl;
         switch (message.type) {
             case (0): // ehlo
             {
-                std::cout << "Ehlo was already received. :c" << std::endl;
-                throw std::runtime_error("Something went wrong - ehlo was already received!");
+                if(readedBytes == sizeof(message_header)){
+                    std::cout << "Ehlo was already received. :c" << std::endl;
+                    throw std::runtime_error("Something went wrong - ehlo was already received!");
+                } // its not ehlo, probably 00000000000
             }
             case (1): // client sent us his filenames
             {
@@ -193,10 +199,11 @@ void *Broker::handleClient(void *ptr) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                     } else {
                         sendRequestForFile(fileOwnerId, filename, buff);
-                        while (!checkFile(brokerSharedDirectory + filename)) {
+                        /*while (!checkFile(brokerSharedDirectory + filename)) {
                             sleep(1);
                         }
                         FileTransfer::sendOneFile(socket, brokerSharedDirectory, filename);
+                         */
                     }
                 }
                 break;
@@ -208,12 +215,12 @@ void *Broker::handleClient(void *ptr) {
             }
             case (6): // client sent us a file
             {
-                FileTransfer::recvOneFile(brokerSharedDirectory, buff, 512);
+                FileTransfer::recvOneFile(brokerSharedDirectory, buff, sizeof(buff));
                 break;
             }
             case (7): // client sent us a file AGAIN
             {
-                FileTransfer::recvOneFile(brokerSharedDirectory, buff, 512);
+                FileTransfer::recvOneFile(brokerSharedDirectory, buff, sizeof(buff));
                 break;
             }
             case (99): // client disconnected
@@ -246,7 +253,7 @@ bool Broker::checkFile(const std::string &name) {
     return (access(name.c_str(), F_OK) != -1);
 }
 
-message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
+message_header Broker::receiveMessage(char * buff, int bufSize, int socket, int * readedBytes) {
     memset(buff, 0, bufSize); // clean buffer
     char typeAndSize[8] = {0};
     message_header header;
@@ -263,6 +270,8 @@ message_header Broker::receiveMessage(char * buff, int bufSize, int socket) {
         header.type = ntohl(header.type);
         header.size = ntohl(header.size);
     }
+
+    *readedBytes = bytesRead;
 
     return header;
 }

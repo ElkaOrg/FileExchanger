@@ -35,11 +35,12 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
 
 
     message_header msg;
-    msg.type = htonl(6);
 
     if (fileNameMaxLength + fileSize < maxTxtBuffer) {
         msg.size = htonl(fileNameMaxLength + fileSize); // we assume that size fit to maxTextBuffer
+        msg.type = htonl(7);
     } else {
+        msg.type = htonl(6); // size does not fit, divide
         msg.size = htonl(maxTxtBuffer - sizeof(message_header)); //default, we assume that size fit to maxTextBuffer
     }
     char buffer[maxTxtBuffer];
@@ -92,13 +93,17 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
     std::fstream file;
     std::string oldName = folderPath + "/" + "_tmp_" + fileNameString;
     file.open(oldName, std::ios::out | std::ios::ate | std::ios::binary);
+    if(!file.good()){
+        std::cout << "Failed when receiving, a file! Could not open file!";
+    }
+    std::cout << oldName << std::endl;
     file.write(buf + sizeof(message_header) + fileNameMaxLength, header->size - fileNameMaxLength);
     file.close();
 
     std::string newName = folderPath + "/" + fileNameString;
 
     //rename only if file was send to the end
-    if (header->type == 7) {
+    if (header->type == 7) { // whole file was send
         std::rename(oldName.c_str(), newName.c_str());
     }
     return 0;

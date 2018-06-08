@@ -39,7 +39,7 @@ private:
     /* Private constructor to prevent instancing. */
     Broker();
 
-    static message_header receiveMessage(char *buff, int bufSize, int socket);
+    static message_header receiveMessage(char *buff, int bufSize, int socket, int * readedBytes);
 };
 
 
