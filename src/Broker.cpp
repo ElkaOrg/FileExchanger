@@ -76,11 +76,11 @@ void Broker::sendErrorToClient(int socket, std::string message) {
     msg.type = htonl(5);
     msg.size = htonl(sizeof(message));
 
-    size_t size = sizeof(msg) + msg.size;
+    size_t size = sizeof(msg) + sizeof(message);
     auto buffer = new char[size];
     memset(buffer, 0x00, size);
     memcpy(buffer, &msg, size);
-    memcpy(buffer + sizeof(msg), &message, msg.size);
+    memcpy(buffer + sizeof(msg), &message, sizeof(message));
     write(socket, buffer, size);
     delete[] buffer;
 }
@@ -209,7 +209,7 @@ void *Broker::handleClient(void *ptr) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                     } else {
                         sendRequestForFile(fileOwnerId, filename, buff);
-                        fileWaits.emplace_back(socket, brokerSharedDirectory + filename);
+                        fileWaits.emplace_back(socket, filename);
                     }
                 }
                 break;
@@ -254,12 +254,13 @@ void *Broker::handleClient(void *ptr) {
     pthread_exit(nullptr);
 }
 void Broker::checkFiles(std::vector<FileWait> & fileWaits){
+    std::cout << "Checking " << std::endl;
     for(auto & fileWait : fileWaits){
-        if(checkFile(fileWait.fileName)){
+        if(checkFile(brokerSharedDirectory + "/" + fileWait.fileName)){
             FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory, fileWait.fileName);
+            ///TO DO remove if ok
         }
     }
-    fileWaits.clear();
 }
 
 void Broker::sendRequestForFile(int socketId, std::string filename, char* buff)
