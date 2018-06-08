@@ -236,23 +236,6 @@ bool ClientConnection::requestForFile(const std::string &fileName) {
     return true;
 }
 
-bool ClientConnection::sayDontHaveFile(const std::string &fileName) {
-    message_header msg;
-    msg.type = htonl(5);
-    msg.size = htonl(fileNameMaxLength);
-
-    size_t size = sizeof(msg) + msg.size;
-    auto buffer = new char[size];
-    memset(buffer, 0x00, size);
-
-    memcpy(buffer, &msg, sizeof(msg));
-    memcpy(buffer + sizeof(msg), fileName.c_str(), fileName.size());
-    write(socketId, buffer, size);
-    delete[] buffer;
-
-    return true;
-}
-
 bool ClientConnection::sendFile(const std::string &filePath, const std::string &fileName) {
     FileTransfer::sendOneFile(socketId, filePath, fileName);
 

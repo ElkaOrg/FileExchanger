@@ -20,6 +20,8 @@ public:
     static int recvOneFile(const std::string & folderPath, char * buf, int bufN);
 
     static std::string parseFileName(const char * fileName, int n);
+
+    static bool sayDontHaveFile(int socketId, const std::string &fileName);
 };
 
 #endif //FILEEXCHANGER_FILETRANSFER_H
