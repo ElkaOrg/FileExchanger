@@ -192,7 +192,7 @@ void *Broker::handleClient(void *ptr) {
                     if (checkFile(brokerSharedDirectory + filename)) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
                     } else {
-                        sendRequestForFile(fileOwnerId, filename);
+                        sendRequestForFile(fileOwnerId, filename, buff);
                         while (!checkFile(brokerSharedDirectory + filename)) {
                             sleep(1);
                         }
@@ -229,9 +229,17 @@ void *Broker::handleClient(void *ptr) {
     } while (true);
 }
 
-void Broker::sendRequestForFile(int socketId, char* filename)
+void Broker::sendRequestForFile(int socketId, std::string filename, char* buff)
 {
+    std::cout << "Sending a request for file " << filename << " to client with ID: " << socketId << std::endl;
 
+    message_header msg;
+    msg.type = htonl(4);
+    msg.size = htonl(fileNameMaxLength);
+    size_t size = sizeof(msg) + msg.size;
+    memcpy(buff, &msg, sizeof(msg));
+    memcpy(buff + sizeof(msg), filename.c_str(), filename.size());
+    write(socketId, buff, size);
 }
 
 bool Broker::checkFile(const std::string &name) {
