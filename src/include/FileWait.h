@@ -12,5 +12,10 @@ typedef struct FileWait {
     std::string fileName;
 
     FileWait(int socketWho, const std::string &fileName) : socketWho(socketWho), fileName(fileName) {}
+
+    bool operator==(const FileWait& rhs) const
+    {
+        return (socketWho==rhs.socketWho?fileName==rhs.fileName:false);
+    }
 } FileWait;
 #endif //FILEEXCHANGER_FILEWAIT_H

@@ -207,6 +207,7 @@ void *Broker::handleClient(void *ptr) {
                               << std::endl;
                     if (checkFile(brokerSharedDirectory + filename)) {
                         std::cout << "File " << filename << " is already downloaded. Will send now." << std::endl;
+                        FileTransfer::sendOneFile(socket, brokerSharedDirectory + filename, filename);
                     } else {
                         sendRequestForFile(fileOwnerId, filename, buff);
                         fileWaits.emplace_back(socket, filename);
@@ -258,7 +259,7 @@ void Broker::checkFiles(std::vector<FileWait> & fileWaits){
     for(auto & fileWait : fileWaits){
         if(checkFile(brokerSharedDirectory + fileWait.fileName)){
             FileTransfer::sendOneFile(fileWait.socketWho, brokerSharedDirectory + fileWait.fileName, fileWait.fileName);
-            ///TO DO remove if ok
+            fileWaits.erase(std::remove(fileWaits.begin(), fileWaits.end(), fileWait), fileWaits.end());
         }
     }
 }
