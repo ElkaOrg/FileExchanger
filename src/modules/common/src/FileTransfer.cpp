@@ -5,12 +5,13 @@
 #include <DirManagment.h>
 #include "../include/FileTransfer.h"
 
-int calcReadBytes(int bufferSizeForFile, int fileSize){
-    if(bufferSizeForFile > fileSize){
+int calcReadBytes(int bufferSizeForFile, int fileSize) {
+    if (bufferSizeForFile > fileSize) {
         return bufferSizeForFile;
     }
     return fileSize;
 }
+
 int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const std::string &fileName) {
     const int maxTxtBuffer = 1024; // how many data can be readed from file
 
@@ -21,7 +22,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
     std::fstream file;
     file.open(filePath.c_str(), std::ios::in | std::ios::binary);
 
-    if(!file.good()){
+    if (!file.good()) {
         std::cout << "Opening error";
         return 1;
     }
@@ -36,7 +37,7 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
     message_header msg;
     msg.type = htonl(6);
 
-    if(fileNameMaxLength + fileSize < maxTxtBuffer){
+    if (fileNameMaxLength + fileSize < maxTxtBuffer) {
         msg.size = htonl(fileNameMaxLength + fileSize); // we assume that size fit to maxTextBuffer
     } else {
         msg.size = htonl(maxTxtBuffer - sizeof(message_header)); //default, we assume that size fit to maxTextBuffer
@@ -46,22 +47,29 @@ int FileTransfer::sendOneFile(int socketId, const std::string &filePath, const s
 
     memset(buffer, 0, maxTxtBuffer);
     memcpy(buffer, &msg, sizeof(message_header)); // message header
-    memcpy(buffer+sizeof(message_header), fileName.c_str(), fileName.size()); // 40 bytes for filename
+    memcpy(buffer + sizeof(message_header), fileName.c_str(), fileName.size()); // 40 bytes for filename
 
     int readedBytes = calcReadBytes(bufferSizeForFile, fileSize);
 
-    file.read(buffer+sizeof(msg)+fileNameMaxLength, readedBytes);
+    file.read(buffer + sizeof(msg) + fileNameMaxLength, readedBytes);
     fileSize -= readedBytes;
     write(socketId, buffer, sizeof(buffer));
 
-    while(fileSize > 0){
+    while (fileSize > 0) {
         // continue sending file
-        msg.type = htonl(7);
         readedBytes = calcReadBytes(bufferSizeForFile, fileSize);
         msg.size = htonl(readedBytes + fileNameMaxLength);
 
-        fileSize-= readedBytes;
+        fileSize -= readedBytes;
         write(socketId, buffer, sizeof(buffer));
+
+        //that was last packet
+        if (fileSize == 0) {
+            msg.type = htonl(7);
+        } else {
+            msg.type = htonl(6);
+        }
+
         sleep(1);
     }
     file.close();
@@ -89,8 +97,10 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
 
     std::string newName = folderPath + "/" + fileNameString;
 
-    std::rename(oldName.c_str(), newName.c_str());
-
+    //rename only if file was send to the end
+    if (header->type == 7) {
+        std::rename(oldName.c_str(), newName.c_str());
+    }
     return 0;
 }
 
