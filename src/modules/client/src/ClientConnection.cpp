@@ -53,7 +53,7 @@ void *ClientConnection::recvThreadFunction(void *object) {
             std::string folderPath;
             char fileName[40];
 
-            std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
+            //std::cout << "Got header!" << header->type << " Bytes: " << bytesRead << std::endl;
 
             switch (header->type) {
                 case 0: { // ehlo to client not supported

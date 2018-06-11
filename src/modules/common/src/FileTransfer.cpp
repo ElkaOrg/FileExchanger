@@ -96,14 +96,13 @@ int FileTransfer::recvOneFile(const std::string &folderPath, char *buf, int leng
     if(!file.good()){
         std::cout << "Failed when receiving, a file! Could not open file!";
     }
-    std::cout << oldName << std::endl;
     file.write(buf + sizeof(message_header) + fileNameMaxLength, header->size - fileNameMaxLength);
     file.close();
 
     std::string newName = folderPath + fileNameString;
-
     //rename only if file was send to the end
     if (header->type == 7) { // whole file was send
+        std::cout << "File received: " + newName << std::endl;
         std::rename(oldName.c_str(), newName.c_str());
     }
     return 0;

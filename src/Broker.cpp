@@ -95,7 +95,6 @@ void *Broker::handleClient(void *ptr) {
 
     char buff[512];
     int readedBytes = 0;
-    std::vector<FileWait> fileWaits;
 
     auto header = receiveMessage(buff, sizeof(buff), socket, &readedBytes);
 
