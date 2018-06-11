@@ -24,7 +24,11 @@ public:
 
     DirManagment(const std::string &dirPathName) : dirPathName(dirPathName), dirPath(dirPathName) {
         if (!is_directory(dirPath)) {
-            throw std::runtime_error("This is not a valid directory!");
+            if (dirPathName.size() > 0) {
+                boost::filesystem::create_directory(dirPathName);
+            } else {
+                throw std::runtime_error("This is not a valid directory!");
+            }
         }
 
     }
@@ -77,9 +81,11 @@ public:
     static bool isValidDirectory(const std::string &path) {
         return is_directory(path);
     }
+
     static bool isValidFile(const std::string &path) {
         return is_regular_file(path);
     }
+
     ~DirManagment() {
     }
 
