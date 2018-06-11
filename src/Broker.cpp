@@ -1,7 +1,6 @@
-//
+// FileExchanger
 // Created by gnowacki on 03.04.18.
 // Implementation by kamkulas.
-//
 
 #include "include/Broker.h"
 #include <Message.h>
