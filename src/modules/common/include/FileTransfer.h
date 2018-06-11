@@ -1,5 +1,7 @@
 //
-// Created by gnowacki on 07.05.18.
+// FileExchanger
+// Created by gnowacki on 07.05.18
+// Implementation by dram
 //
 
 #ifndef FILEEXCHANGER_FILETRANSFER_H

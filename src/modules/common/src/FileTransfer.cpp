@@ -1,5 +1,7 @@
 //
+// FileExchanger
 // Created by gnowacki on 07.05.18.
+// Implementation by dram
 //
 
 #include <DirManagment.h>
